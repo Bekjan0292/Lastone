@@ -13,7 +13,7 @@ background_path = "background.jpg"
 if not os.path.exists(background_path):
     st.warning("Background image not found! Please ensure 'background.jpg' is in the app directory.")
 
-# CSS для добавления фонового изображения и черного текста
+# CSS для добавления фонового изображения
 st.markdown(f"""
     <style>
         body {{
@@ -28,6 +28,7 @@ st.markdown(f"""
         }}
         .block-container {{
             padding: 2rem;
+            background: none; /* Удаляем фон для блока */
         }}
         h1, h2, h3 {{
             color: black;
