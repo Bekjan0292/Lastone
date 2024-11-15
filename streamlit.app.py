@@ -7,24 +7,18 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Фон с видео и стилизация текста
+# Темный фон с локальным изображением и стилизация текста
 st.markdown("""
     <style>
         body {
             margin: 0;
             padding: 0;
-            background: black;
+            background-image: url('background.jpg');
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
             color: white;
             font-family: Arial, sans-serif;
-        }
-        video {
-            position: fixed;
-            top: 0;
-            left: 0;
-            min-width: 100%;
-            min-height: 100%;
-            z-index: -1;
-            object-fit: cover;
         }
         .block-container {
             background: rgba(0, 0, 0, 0.8);
@@ -52,10 +46,6 @@ st.markdown("""
             background-color: #00c853;
         }
     </style>
-    <video autoplay loop muted>
-        <source src="https://www.w3schools.com/howto/rain.mp4" type="video/mp4">
-        Your browser does not support HTML5 video.
-    </video>
 """, unsafe_allow_html=True)
 
 # Заголовок сайта
