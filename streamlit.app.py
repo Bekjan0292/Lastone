@@ -1,5 +1,7 @@
 import streamlit as st
-import os
+import yfinance as yf
+import pandas as pd
+import plotly.graph_objects as go
 
 # Настройки страницы
 st.set_page_config(
@@ -87,10 +89,6 @@ if company:
         st.success(f"Starting {analysis_type.lower()} for {company.upper()}...")
 if analysis_type == "Fundamental Analysis" and data:
     display_fundamental_analysis(data)
-    import streamlit as st
-import yfinance as yf
-import pandas as pd
-import plotly.graph_objects as go
 
 # Функция для получения данных через yfinance
 @st.cache_data
