@@ -1,5 +1,2 @@
 streamlit
-yfinance
-pandas
-altair
-plotly
+os
