@@ -15,24 +15,111 @@ def load_stock_data(ticker, start_date, end_date):
     return stock.history(start=start_date, end=end_date)
 
 @st.cache_data
+import streamlit as st
+import yfinance as yf
+
+# Helper function to retrieve company info
+@st.cache_data
 def get_company_info(ticker):
     stock = yf.Ticker(ticker)
+    info = stock.info
     return {
-        "Sector": stock.info.get("sector", "N/A"),
-        "Country": stock.info.get("country", "N/A"),
-        "PE Ratio": stock.info.get("trailingPE", "N/A"),
-        "PB Ratio": stock.info.get("priceToBook", "N/A"),
-        "EPS": stock.info.get("trailingEps", "N/A"),
-        "Revenue": stock.info.get("totalRevenue", "N/A"),
-        "Net Income": stock.info.get("netIncomeToCommon", "N/A"),
-        "Debt to Equity": stock.info.get("debtToEquity", "N/A"),
-        "Dividend Yield": stock.info.get("dividendYield", "N/A"),
-        "Profit Margin": stock.info.get("profitMargins", "N/A"),
-        "Current Ratio": stock.info.get("currentRatio", "N/A"),
-        "Quick Ratio": stock.info.get("quickRatio", "N/A"),
-        "ROE": stock.info.get("returnOnEquity", "N/A"),
+        "Company Name": info.get("shortName", "N/A"),
+        "Sector": info.get("sector", "N/A"),
+        "Industry": info.get("industry", "N/A"),
+        "Country": info.get("country", "N/A"),
+        "PE Ratio": info.get("trailingPE", "N/A"),
+        "PB Ratio": info.get("priceToBook", "N/A"),
+        "EPS": info.get("trailingEps", "N/A"),
+        "Revenue": info.get("totalRevenue", "N/A"),
+        "Net Income": info.get("netIncomeToCommon", "N/A"),
+        "Debt to Equity": info.get("debtToEquity", "N/A"),
+        "Dividend Yield": info.get("dividendYield", "N/A"),
+        "Profit Margin": info.get("profitMargins", "N/A"),
+        "Current Ratio": info.get("currentRatio", "N/A"),
+        "Quick Ratio": info.get("quickRatio", "N/A"),
+        "ROE": info.get("returnOnEquity", "N/A"),
+        "Market Cap": info.get("marketCap", "N/A"),
     }
 
+# Main app
+def main():
+    st.sidebar.header("Options")
+    ticker = st.sidebar.text_input("Stock symbol:", "AAPL")
+    
+    # Load company info
+    company_info = get_company_info(ticker)
+
+    st.header("Fundamental Analysis")
+
+    # Display basic company info
+    st.write("### Company Overview")
+    st.write(f"**Company Name:** {company_info['Company Name']}")
+    st.write(f"**Sector:** {company_info['Sector']}")
+    st.write(f"**Industry:** {company_info['Industry']}")
+    st.write(f"**Country:** {company_info['Country']}")
+
+    # Display financial metrics with explanations
+    st.write("### Key Financial Metrics")
+
+    # P/E Ratio (Price-to-Earnings)
+    st.write(f"**P/E Ratio (Price-to-Earnings):** {company_info['PE Ratio']}")
+    st.write("A higher P/E ratio suggests that investors are willing to pay more for a company's earnings, often indicating high expectations for future growth.")
+
+    # P/B Ratio (Price-to-Book)
+    st.write(f"**P/B Ratio (Price-to-Book):** {company_info['PB Ratio']}")
+    st.write("The P/B ratio compares a company's market value to its book value. A ratio above 1 means the stock is trading for more than its book value, suggesting strong growth expectations.")
+
+    # EPS (Earnings Per Share)
+    st.write(f"**EPS (Earnings Per Share):** {company_info['EPS']}")
+    st.write("EPS indicates the profitability of a company. A higher EPS typically reflects better financial performance.")
+
+    # Revenue
+    st.write(f"**Revenue:** {company_info['Revenue']:,}" if company_info['Revenue'] != 'N/A' else "**Revenue:** N/A")
+    st.write("Revenue is the total amount of money the company brings in. It's often used to assess the size and growth potential of a business.")
+
+    # Net Income
+    st.write(f"**Net Income:** {company_info['Net Income']:,}" if company_info['Net Income'] != 'N/A' else "**Net Income:** N/A")
+    st.write("Net Income is the profit of a company after all expenses are subtracted. It's a key indicator of financial health.")
+
+    # Debt to Equity Ratio
+    st.write(f"**Debt to Equity Ratio:** {company_info['Debt to Equity']}")
+    st.write("A lower Debt-to-Equity ratio indicates lower financial risk. A ratio higher than 1 means the company has more debt than equity.")
+
+    # Dividend Yield
+    st.write(f"**Dividend Yield:** {company_info['Dividend Yield']}")
+    st.write("Dividend yield represents the annual return on investment from dividends. A high dividend yield might appeal to income investors.")
+
+    # Profit Margin
+    st.write(f"**Profit Margin:** {company_info['Profit Margin']}")
+    st.write("Profit margin is the percentage of revenue that turns into profit. A higher profit margin indicates better profitability.")
+
+    # Current Ratio
+    st.write(f"**Current Ratio:** {company_info['Current Ratio']}")
+    st.write("The current ratio measures a company's ability to pay off its short-term liabilities with its short-term assets. A ratio greater than 1 is considered healthy.")
+
+    # Quick Ratio
+    st.write(f"**Quick Ratio:** {company_info['Quick Ratio']}")
+    st.write("The quick ratio is similar to the current ratio but excludes inventory. It provides a stricter measure of liquidity.")
+
+    # ROE (Return on Equity)
+    st.write(f"**ROE (Return on Equity):** {company_info['ROE']}")
+    st.write("ROE measures a company's profitability by comparing net income to shareholders' equity. A higher ROE suggests efficient management.")
+
+    # Market Cap
+    st.write(f"**Market Cap:** {company_info['Market Cap']}")
+    st.write("Market capitalization reflects the total value of a company's outstanding shares. It's used to classify companies into categories like large-cap, mid-cap, or small-cap.")
+
+    # Add additional metrics or insights as needed
+    st.write("### Additional Insights")
+    st.write("These metrics collectively give investors an understanding of the company's financial health, growth prospects, and risk levels. A well-rounded analysis of these metrics helps to assess the stock's potential in the market.")
+
+    # Recommendations (Add any custom recommendation logic here if needed)
+    st.write("### Recommendations")
+    st.write("Based on the fundamental analysis, you can make informed decisions about whether to buy, sell, or hold the stock.")
+
+if __name__ == "__main__":
+    main()
 # Technical Indicators (Using 'ta' instead of 'TA-Lib')
 def calculate_bollinger_bands(data, period=20, std_dev=2):
     bb = ta.volatility.BollingerBands(close=data['Close'], window=period, window_dev=std_dev)
