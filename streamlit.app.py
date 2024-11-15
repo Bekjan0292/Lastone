@@ -19,20 +19,19 @@ if ticker:
     stock = yf.Ticker(ticker)
     info = stock.info
     financials = stock.financials
-    balance_sheet = stock.balance_sheet
-    cash_flow = stock.cashflow
 
     # Display Key Information
     st.header(f"Company Overview: {info['shortName']}")
-    st.subheader("Summary")
-    st.write(info.get('longBusinessSummary', 'No description available.'))
-    
     st.subheader("Key Metrics")
-    st.metric("Market Cap", f"${info['marketCap']:,}")
-    st.metric("PE Ratio (TTM)", info.get('trailingPE', 'N/A'))
-    st.metric("Dividend Yield", f"{info.get('dividendYield', 0) * 100:.2f}%")
+    
+    # Display Market Cap in millions
+    market_cap = info['marketCap'] / 1_000_000  # Convert to millions
+    st.metric("Market Cap (in millions)", f"${market_cap:,.0f}M")
 
-    # Financial Statement Trends
+    # Display P/E Ratio (TTM)
+    st.metric("P/E Ratio (TTM)", info.get('trailingPE', 'N/A'))
+
+    # Financial Statement Trends (simplified)
     st.subheader("Financial Trends")
     st.markdown("Revenue and Net Income trends over the last 4 years.")
     fig, ax = plt.subplots()
@@ -42,7 +41,7 @@ if ticker:
     ax.legend()
     st.pyplot(fig)
 
-    # Ratio Analysis
+    # Financial Ratios (simplified)
     st.subheader("Financial Ratios")
     ratios = {
         "P/E Ratio": info.get("trailingPE"),
@@ -51,16 +50,6 @@ if ticker:
         "Debt/Equity": info.get("debtToEquity"),
     }
     st.write(pd.DataFrame(ratios.items(), columns=["Ratio", "Value"]))
-
-    # Industry Comparison (Placeholder)
-    st.subheader("Industry Comparison")
-    st.write("Coming soon: Peer comparison within the same sector.")
-
-    # Download Report
-    if st.button("Download Report"):
-        report = pd.DataFrame(ratios.items(), columns=["Ratio", "Value"])
-        report.to_csv("financial_report.csv")
-        st.write("Report downloaded as `financial_report.csv`.")
 
 else:
     st.info("Please enter a stock ticker to begin analysis.")
