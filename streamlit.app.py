@@ -1,15 +1,11 @@
 import streamlit as st
 import yfinance as yf
 import pandas as pd
-import matplotlib.pyplot as plt
-import plotly.graph_objects as go
-import ta
 
-# Title and Description
-st.title("Investment Analysis Dashboard: Fundamental and Technical Analysis")
+# Title and Introduction
+st.title("Expanded Fundamental Analysis with Buy, Hold, Sell Recommendations")
 st.markdown("""
-This app provides both **Fundamental** and **Technical Analysis** for stocks. 
-It fetches stock data, calculates key financial ratios, and visualizes price trends and indicators.
+This app provides a detailed fundamental analysis of a stock, including key financial metrics and overall recommendations (Buy, Hold, Sell) to help you make informed investment decisions.
 """)
 
 # User Input: Stock Ticker
@@ -20,85 +16,154 @@ if ticker:
     stock = yf.Ticker(ticker)
     info = stock.info
     financials = stock.financials
-    history = stock.history(period="1y")
-    
-    # ---- Fundamental Analysis ----
+    balance_sheet = stock.balance_sheet
+
+    # ---- Fundamental Metrics ----
     st.header(f"Fundamental Analysis of {ticker}")
     
     # Market Cap in millions
     market_cap = info['marketCap'] / 1_000_000
     st.metric("Market Cap (in millions)", f"${market_cap:,.0f}M")
-    
-    # Key Financial Ratios
-    ratios = {
-        "P/E Ratio": info.get("trailingPE", 'N/A'),
-        "Price/Book": info.get("priceToBook", 'N/A'),
-        "Return on Equity (ROE)": info.get("returnOnEquity", 'N/A'),
-        "Dividend Yield": info.get("dividendYield", 'N/A') * 100
-    }
-    st.write(pd.DataFrame(ratios.items(), columns=["Ratio", "Value"]))
-    
-    # Financial Statement Trends (Revenue and Net Income)
-    st.subheader("Financial Trends")
-    fig, ax = plt.subplots()
-    financials.loc['Total Revenue'].plot(kind='line', label='Revenue', ax=ax)
-    financials.loc['Net Income'].plot(kind='line', label='Net Income', ax=ax)
-    ax.set_title("Revenue vs. Net Income")
-    ax.legend()
-    st.pyplot(fig)
 
-    # ---- Technical Analysis ----
-    st.header(f"Technical Analysis of {ticker}")
+    # P/E Ratio
+    pe_ratio = info.get('trailingPE', 'N/A')
+    if pe_ratio != 'N/A':
+        pe_recommendation = "Undervalued" if pe_ratio < 15 else "Overvalued" if pe_ratio > 25 else "Fairly Valued"
+    else:
+        pe_recommendation = "Data not available"
     
-    # Plot stock price chart with moving averages
-    st.subheader("Price Chart with Moving Averages")
-    history['SMA50'] = history['Close'].rolling(window=50).mean()
-    history['SMA200'] = history['Close'].rolling(window=200).mean()
-    
-    fig = go.Figure()
-    fig.add_trace(go.Candlestick(
-        x=history.index,
-        open=history['Open'],
-        high=history['High'],
-        low=history['Low'],
-        close=history['Close'],
-        name='Candlesticks'
-    ))
-    fig.add_trace(go.Scatter(
-        x=history.index, y=history['SMA50'], mode='lines', name='50-day SMA'
-    ))
-    fig.add_trace(go.Scatter(
-        x=history.index, y=history['SMA200'], mode='lines', name='200-day SMA'
-    ))
-    st.plotly_chart(fig)
+    st.subheader("P/E Ratio (Price-to-Earnings)")
+    st.write(f"P/E Ratio: {pe_ratio}")
+    st.write(f"Recommendation: {pe_recommendation}")
+    st.markdown("""
+    - **P/E Ratio** measures how much investors are willing to pay for each dollar of earnings.
+    - **Undervalued**: A low P/E may indicate the stock is cheap relative to earnings.
+    - **Overvalued**: A high P/E may suggest the stock is expensive.
+    - **Fairly Valued**: A P/E between 15 and 25 is often considered a balanced value.
+    """)
 
-    # Add technical indicators (RSI and MACD)
-    st.subheader("RSI and MACD")
-    
-    # Calculate RSI using ta library
-    history['RSI'] = ta.momentum.RSIIndicator(history['Close'], window=14).rsi()
-    
-    # Calculate MACD using ta library
-    macd = ta.trend.MACD(history['Close'])
-    history['MACD'] = macd.macd()
-    history['MACD_signal'] = macd.macd_signal()
-    
-    fig, ax = plt.subplots(2, 1, figsize=(10, 8))
-    
-    # Plot RSI
-    ax[0].plot(history.index, history['RSI'], label='RSI')
-    ax[0].axhline(70, color='r', linestyle='--', label='Overbought')
-    ax[0].axhline(30, color='g', linestyle='--', label='Oversold')
-    ax[0].set_title("RSI (Relative Strength Index)")
-    ax[0].legend()
-    
-    # Plot MACD
-    ax[1].plot(history.index, history['MACD'], label='MACD')
-    ax[1].plot(history.index, history['MACD_signal'], label='MACD Signal', linestyle='--')
-    ax[1].set_title("MACD (Moving Average Convergence Divergence)")
-    ax[1].legend()
+    # P/B Ratio
+    pb_ratio = info.get('priceToBook', 'N/A')
+    if pb_ratio != 'N/A':
+        pb_recommendation = "Undervalued" if pb_ratio < 1 else "Overvalued" if pb_ratio > 3 else "Fairly Valued"
+    else:
+        pb_recommendation = "Data not available"
 
-    st.pyplot(fig)
+    st.subheader("P/B Ratio (Price-to-Book)")
+    st.write(f"P/B Ratio: {pb_ratio}")
+    st.write(f"Recommendation: {pb_recommendation}")
+    st.markdown("""
+    - **P/B Ratio** compares the market value of a company to its book value.
+    - **Undervalued**: A P/B ratio less than 1 might indicate the stock is trading below its book value.
+    - **Overvalued**: A high P/B ratio may suggest the stock is overpriced.
+    - **Fairly Valued**: A P/B ratio between 1 and 3 is often considered normal.
+    """)
+
+    # Dividend Yield
+    dividend_yield = info.get('dividendYield', 'N/A') * 100  # in percentage
+    st.subheader("Dividend Yield")
+    st.write(f"Dividend Yield: {dividend_yield:.2f}%")
+    st.markdown("""
+    - **Dividend Yield** shows how much a company pays out in dividends each year relative to its share price.
+    - A **high dividend yield** may be attractive for income-seeking investors, but it can sometimes signal a risk of sustainability issues.
+    - A **low or no dividend yield** is common in growth companies that reinvest earnings into expansion.
+    """)
+
+    # Return on Equity (ROE)
+    roe = info.get('returnOnEquity', 'N/A')
+    if roe != 'N/A':
+        roe_recommendation = "Good" if roe > 15 else "Average" if roe > 5 else "Poor"
+    else:
+        roe_recommendation = "Data not available"
     
+    st.subheader("Return on Equity (ROE)")
+    st.write(f"ROE: {roe}%")
+    st.write(f"Recommendation: {roe_recommendation}")
+    st.markdown("""
+    - **ROE** measures how efficiently a company is generating profits from its equity.
+    - **Good**: An ROE above 15% suggests the company is using shareholder equity well.
+    - **Average**: An ROE between 5% and 15% indicates average performance.
+    - **Poor**: An ROE below 5% may suggest inefficiency.
+    """)
+
+    # Debt-to-Equity Ratio
+    debt_to_equity = info.get('debtToEquity', 'N/A')
+    if debt_to_equity != 'N/A':
+        debt_recommendation = "Healthy" if debt_to_equity < 1 else "Risky" if debt_to_equity > 2 else "Moderate"
+    else:
+        debt_recommendation = "Data not available"
+    
+    st.subheader("Debt-to-Equity Ratio")
+    st.write(f"Debt-to-Equity: {debt_to_equity}")
+    st.write(f"Recommendation: {debt_recommendation}")
+    st.markdown("""
+    - **Debt-to-Equity Ratio** indicates how much debt a company has relative to equity.
+    - **Healthy**: A low ratio (below 1) suggests the company is not over-leveraged.
+    - **Risky**: A high ratio (above 2) suggests the company is highly leveraged and may face financial strain.
+    - **Moderate**: A ratio between 1 and 2 is typical for most companies.
+    """)
+
+    # ---- Overall Recommendation (Buy, Hold, Sell) ----
+    st.header("Overall Investment Recommendation")
+
+    # Decision-making based on ratios:
+    buy_count = 0
+    hold_count = 0
+    sell_count = 0
+
+    # P/E Recommendation
+    if pe_recommendation == "Undervalued":
+        buy_count += 1
+    elif pe_recommendation == "Overvalued":
+        sell_count += 1
+    else:
+        hold_count += 1
+
+    # P/B Recommendation
+    if pb_recommendation == "Undervalued":
+        buy_count += 1
+    elif pb_recommendation == "Overvalued":
+        sell_count += 1
+    else:
+        hold_count += 1
+
+    # Dividend Yield (Considered "good" if greater than 3%)
+    if dividend_yield > 3:
+        buy_count += 1
+    else:
+        hold_count += 1
+
+    # ROE Recommendation
+    if roe != 'N/A':
+        if roe > 15:
+            buy_count += 1
+        elif roe > 5:
+            hold_count += 1
+        else:
+            sell_count += 1
+
+    # Debt-to-Equity Recommendation
+    if debt_to_equity != 'N/A':
+        if debt_to_equity < 1:
+            buy_count += 1
+        elif debt_to_equity > 2:
+            sell_count += 1
+        else:
+            hold_count += 1
+
+    # Final Decision: Buy, Hold, or Sell
+    if buy_count >= 3:
+        recommendation = "Buy"
+        recommendation_color = "green"
+    elif sell_count >= 3:
+        recommendation = "Sell"
+        recommendation_color = "red"
+    else:
+        recommendation = "Hold"
+        recommendation_color = "orange"
+
+    st.markdown(f"### Overall Recommendation: **{recommendation}**")
+    st.markdown(f"<h3 style='color:{recommendation_color};'>{recommendation}</h3>", unsafe_allow_html=True)
+
 else:
     st.info("Please enter a stock ticker to begin analysis.")
