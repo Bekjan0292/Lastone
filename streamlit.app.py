@@ -24,7 +24,7 @@ def fetch_company_data(ticker):
 def display_fundamental_analysis(data):
     st.header("Fundamental Analysis")
     
-    # Общая информация
+    # 1. Общая информация
     st.subheader("Company Overview")
     st.write(f"**Name:** {data.get('shortName', 'N/A')}")
     st.write(f"**Sector:** {data.get('sector', 'N/A')}")
@@ -32,7 +32,7 @@ def display_fundamental_analysis(data):
     st.write(f"**Website:** [Visit Website]({data.get('website', 'N/A')})")
     st.write(f"**Description:** {data.get('longBusinessSummary', 'N/A')}")
 
-    # Финансовые показатели
+    # 2. Финансовые показатели
     st.subheader("Financial Performance")
     financial_performance = {
         "Revenue (TTM)": data.get("totalRevenue", "N/A"),
@@ -43,7 +43,7 @@ def display_fundamental_analysis(data):
     financial_df = pd.DataFrame(list(financial_performance.items()), columns=["Metric", "Value"])
     st.table(financial_df)
 
-    # Показатели роста
+    # 3. Показатели роста
     st.subheader("Growth Metrics")
     growth_metrics = {
         "Revenue Growth (Quarterly YoY)": data.get("revenueGrowth", "N/A"),
@@ -52,7 +52,7 @@ def display_fundamental_analysis(data):
     growth_df = pd.DataFrame(list(growth_metrics.items()), columns=["Metric", "Value"])
     st.table(growth_df)
 
-    # Долговая нагрузка
+    # 4. Долговая нагрузка
     st.subheader("Debt and Leverage")
     debt_ratios = {
         "Debt to Equity Ratio": data.get("debtToEquity", "N/A"),
@@ -62,7 +62,7 @@ def display_fundamental_analysis(data):
     debt_df = pd.DataFrame(list(debt_ratios.items()), columns=["Metric", "Value"])
     st.table(debt_df)
 
-    # Графическое представление
+    # 5. Графическое представление
     st.subheader("Visual Representation of Financial Ratios")
     financial_ratios = {
         "P/E Ratio": data.get("trailingPE", 0),
@@ -84,10 +84,12 @@ def display_fundamental_analysis(data):
     )
     st.plotly_chart(fig)
 
-# Основная логика страниц
-menu = st.sidebar.radio("Navigate", ["Home", "Fundamental Analysis"])
+# Проверка состояния для определения текущей страницы
+if "page" not in st.session_state:
+    st.session_state.page = "Home"
 
-if menu == "Home":
+# Логика переключения страниц
+if st.session_state.page == "Home":
     # Стартовая страница
     st.title("Welcome to Stock Analysis")
     st.subheader("Step 1: Choose a Company")
@@ -109,14 +111,15 @@ if menu == "Home":
             **Technical Analysis** analyzes statistical trends from trading activity to identify trading opportunities.
         """)
 
-    if company and st.button("Go to Fundamental Analysis"):
-        st.session_state["company"] = company
-        st.session_state["navigate"] = "Fundamental Analysis"
+    if company and analysis_type == "Fundamental Analysis":
+        if st.button("Go to Fundamental Analysis"):
+            st.session_state.page = "Fundamental Analysis"
+            st.session_state.company = company
 
-elif menu == "Fundamental Analysis":
+elif st.session_state.page == "Fundamental Analysis":
+    # Страница фундаментального анализа
     st.title("Fundamental Analysis")
 
-    # Получение символа компании из состояния
     company = st.session_state.get("company", None)
 
     if company:
@@ -127,3 +130,6 @@ elif menu == "Fundamental Analysis":
             st.error(f"Failed to load data for {company}. Please return to the Home page.")
     else:
         st.error("No company selected. Please return to the Home page.")
+
+    if st.button("Back to Home"):
+        st.session_state.page = "Home"
