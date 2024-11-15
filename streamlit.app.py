@@ -2,176 +2,121 @@ import streamlit as st
 import yfinance as yf
 import pandas as pd
 import plotly.graph_objects as go
+import numpy as np
 
 # Title and Introduction
-st.title("Stock Fundamental Analysis Dashboard")
+st.title("Stock Portfolio Dashboard")
 st.markdown("""
-This dashboard performs a fundamental analysis of any stock, including key financial metrics such as P/E Ratio, P/B Ratio, Dividend Yield, ROE, and Debt-to-Equity ratio.
-It also visualizes historical stock data over the last year.
+This is an interactive portfolio analysis tool that allows you to view and analyze your stocks with key financial metrics.
+You can also view price trends, moving averages, and get stock recommendations.
 """)
 
-# User Input: Stock Ticker
-ticker = st.text_input("Enter Stock Ticker (e.g., AAPL, MSFT, NVDA):", value="NVDA")
+# Display Logo (make sure you have a logo image in the folder)
+st.image("logo.png", width=200)  # Make sure to add your logo.png in the same directory or specify the correct path
 
-# Fetch Stock Data
-if ticker:
-    stock = yf.Ticker(ticker)
-    info = stock.info
-    historical_data = stock.history(period="1y")  # Get 1 year of data for stock price
+# User Input: Portfolio Ticker Upload or Example
+uploaded_file = st.file_uploader("Upload your Portfolio CSV (with Tickers)", type=["csv"])
 
-    # ---- Fundamental Metrics ----
-    st.header(f"Fundamental Analysis of {ticker}")
+# Sample Portfolio if no file is uploaded
+sample_portfolio = {
+    "AAPL": "Apple Inc.",
+    "MSFT": "Microsoft Corp.",
+    "GOOGL": "Alphabet Inc.",
+    "AMZN": "Amazon.com Inc.",
+    "TSLA": "Tesla Inc."
+}
 
-    # Market Cap in millions
-    market_cap = info['marketCap'] / 1_000_000
-    st.metric("Market Cap (in millions)", f"${market_cap:,.0f}M")
-
-    # P/E Ratio
-    pe_ratio = info.get('trailingPE', 'N/A')
-    if pe_ratio != 'N/A':
-        pe_recommendation = "Undervalued" if pe_ratio < 15 else "Overvalued" if pe_ratio > 25 else "Fairly Valued"
-    else:
-        pe_recommendation = "Data not available"
-    
-    st.subheader("P/E Ratio (Price-to-Earnings)")
-    st.write(f"P/E Ratio: {pe_ratio}")
-    st.write(f"Recommendation: {pe_recommendation}")
-    st.markdown("""
-    - **P/E Ratio** measures how much investors are willing to pay for each dollar of earnings.
-    - **Undervalued**: A low P/E may indicate the stock is cheap relative to earnings.
-    - **Overvalued**: A high P/E may suggest the stock is expensive.
-    - **Fairly Valued**: A P/E between 15 and 25 is often considered a balanced value.
-    """)
-
-    # P/B Ratio
-    pb_ratio = info.get('priceToBook', 'N/A')
-    if pb_ratio != 'N/A':
-        pb_recommendation = "Undervalued" if pb_ratio < 1 else "Overvalued" if pb_ratio > 3 else "Fairly Valued"
-    else:
-        pb_recommendation = "Data not available"
-
-    st.subheader("P/B Ratio (Price-to-Book)")
-    st.write(f"P/B Ratio: {pb_ratio}")
-    st.write(f"Recommendation: {pb_recommendation}")
-    st.markdown("""
-    - **P/B Ratio** compares the market value of a company to its book value.
-    - **Undervalued**: A P/B ratio less than 1 might indicate the stock is trading below its book value.
-    - **Overvalued**: A high P/B ratio may suggest the stock is overpriced.
-    - **Fairly Valued**: A P/B ratio between 1 and 3 is often considered normal.
-    """)
-
-    # Dividend Yield
-    dividend_yield = info.get('dividendYield', 'N/A') * 100  # in percentage
-    st.subheader("Dividend Yield")
-    st.write(f"Dividend Yield: {dividend_yield:.2f}%")
-    st.markdown("""
-    - **Dividend Yield** shows how much a company pays out in dividends each year relative to its share price.
-    - A **high dividend yield** may be attractive for income-seeking investors, but it can sometimes signal a risk of sustainability issues.
-    - A **low or no dividend yield** is common in growth companies that reinvest earnings into expansion.
-    """)
-
-    # Return on Equity (ROE)
-    roe = info.get('returnOnEquity', 'N/A')
-    if roe != 'N/A':
-        roe_recommendation = "Good" if roe > 15 else "Average" if roe > 5 else "Poor"
-    else:
-        roe_recommendation = "Data not available"
-    
-    st.subheader("Return on Equity (ROE)")
-    st.write(f"ROE: {roe}%")
-    st.write(f"Recommendation: {roe_recommendation}")
-    st.markdown("""
-    - **ROE** measures how efficiently a company is generating profits from its equity.
-    - **Good**: An ROE above 15% suggests the company is using shareholder equity well.
-    - **Average**: An ROE between 5% and 15% indicates average performance.
-    - **Poor**: An ROE below 5% may suggest inefficiency.
-    """)
-
-    # Debt-to-Equity Ratio
-    debt_to_equity = info.get('debtToEquity', 'N/A')
-    if debt_to_equity != 'N/A':
-        debt_recommendation = "Healthy" if debt_to_equity < 1 else "Risky" if debt_to_equity > 2 else "Moderate"
-    else:
-        debt_recommendation = "Data not available"
-    
-    st.subheader("Debt-to-Equity Ratio")
-    st.write(f"Debt-to-Equity: {debt_to_equity}")
-    st.write(f"Recommendation: {debt_recommendation}")
-    st.markdown("""
-    - **Debt-to-Equity Ratio** indicates how much debt a company has relative to equity.
-    - **Healthy**: A low ratio (below 1) suggests the company is not over-leveraged.
-    - **Risky**: A high ratio (above 2) suggests the company is highly leveraged and may face financial strain.
-    - **Moderate**: A ratio between 1 and 2 is typical for most companies.
-    """)
-
-    # ---- Overall Recommendation (Buy, Hold, Sell) ----
-    st.header("Overall Investment Recommendation")
-
-    # Decision-making based on ratios:
-    buy_count = 0
-    hold_count = 0
-    sell_count = 0
-
-    # P/E Recommendation
-    if pe_recommendation == "Undervalued":
-        buy_count += 1
-    elif pe_recommendation == "Overvalued":
-        sell_count += 1
-    else:
-        hold_count += 1
-
-    # P/B Recommendation
-    if pb_recommendation == "Undervalued":
-        buy_count += 1
-    elif pb_recommendation == "Overvalued":
-        sell_count += 1
-    else:
-        hold_count += 1
-
-    # Dividend Yield (Considered "good" if greater than 3%)
-    if dividend_yield > 3:
-        buy_count += 1
-    else:
-        hold_count += 1
-
-    # ROE Recommendation
-    if roe != 'N/A':
-        if roe > 15:
-            buy_count += 1
-        elif roe > 5:
-            hold_count += 1
-        else:
-            sell_count += 1
-
-    # Debt-to-Equity Recommendation
-    if debt_to_equity != 'N/A':
-        if debt_to_equity < 1:
-            buy_count += 1
-        elif debt_to_equity > 2:
-            sell_count += 1
-        else:
-            hold_count += 1
-
-    # Final Decision: Buy, Hold, or Sell
-    if buy_count >= 3:
-        recommendation = "Buy"
-        recommendation_color = "green"
-    elif sell_count >= 3:
-        recommendation = "Sell"
-        recommendation_color = "red"
-    else:
-        recommendation = "Hold"
-        recommendation_color = "orange"
-
-    st.markdown(f"### Overall Recommendation: **{recommendation}**")
-    st.markdown(f"<h3 style='color:{recommendation_color};'>{recommendation}</h3>", unsafe_allow_html=True)
-
-    # ---- Historical Stock Data ----
-    st.subheader("Stock Price History (Last 1 Year)")
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(x=historical_data.index, y=historical_data['Close'], mode='lines', name='Closing Price'))
-    fig.update_layout(title=f'{ticker} Closing Price (Last 1 Year)', xaxis_title='Date', yaxis_title='Price (USD)')
-    st.plotly_chart(fig)
-
+# Default portfolio
+if uploaded_file is not None:
+    portfolio_df = pd.read_csv(uploaded_file)
 else:
-    st.info("Please enter a stock ticker to begin analysis.")
+    st.markdown("**Sample Portfolio**")
+    portfolio_df = pd.DataFrame({"Ticker": list(sample_portfolio.keys()), "Company": list(sample_portfolio.values())})
+
+# Display Portfolio Table
+st.write("### Portfolio Overview")
+st.dataframe(portfolio_df)
+
+# Fetch Stock Data and calculate financial metrics
+def fetch_stock_data(ticker):
+    stock = yf.Ticker(ticker)
+    stock_data = stock.history(period="1y")
+    return stock_data, stock.info
+
+# Portfolio Analysis: Fetch data for each stock
+for ticker in portfolio_df["Ticker"]:
+    st.subheader(f"Stock: {ticker}")
+    
+    # Fetch data for stock and its info
+    stock_data, stock_info = fetch_stock_data(ticker)
+
+    # Stock Price Trend (last 1 year)
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=stock_data.index, y=stock_data['Close'], mode='lines', name=f'{ticker} Closing Price'))
+    fig.update_layout(title=f'{ticker} - Price Trend (Last 1 Year)', xaxis_title='Date', yaxis_title='Price (USD)')
+    st.plotly_chart(fig)
+    
+    # Moving Averages: 50-day and 200-day
+    stock_data['SMA50'] = stock_data['Close'].rolling(window=50).mean()
+    stock_data['SMA200'] = stock_data['Close'].rolling(window=200).mean()
+    
+    fig2 = go.Figure()
+    fig2.add_trace(go.Scatter(x=stock_data.index, y=stock_data['Close'], mode='lines', name='Stock Price'))
+    fig2.add_trace(go.Scatter(x=stock_data.index, y=stock_data['SMA50'], mode='lines', name='50-Day Moving Average'))
+    fig2.add_trace(go.Scatter(x=stock_data.index, y=stock_data['SMA200'], mode='lines', name='200-Day Moving Average'))
+    fig2.update_layout(title=f'{ticker} - Moving Averages', xaxis_title='Date', yaxis_title='Price (USD)')
+    st.plotly_chart(fig2)
+    
+    # Financial Metrics Table
+    st.write("### Financial Metrics")
+    financial_data = {
+        "P/E Ratio": stock_info.get('trailingPE', 'N/A'),
+        "P/B Ratio": stock_info.get('priceToBook', 'N/A'),
+        "Return on Equity (ROE)": stock_info.get('returnOnEquity', 'N/A'),
+        "Dividend Yield": f"{stock_info.get('dividendYield', 0) * 100}%",
+        "Market Cap (M)": stock_info.get('marketCap', 'N/A') / 1_000_000
+    }
+    
+    metrics_df = pd.DataFrame(list(financial_data.items()), columns=["Metric", "Value"])
+    st.table(metrics_df)
+
+    # Recommendation based on P/E ratio
+    pe_ratio = stock_info.get('trailingPE', None)
+    if pe_ratio:
+        if pe_ratio < 15:
+            st.markdown("**Recommendation**: Buy (Undervalued)")
+        elif pe_ratio > 25:
+            st.markdown("**Recommendation**: Sell (Overvalued)")
+        else:
+            st.markdown("**Recommendation**: Hold (Fairly Valued)")
+    else:
+        st.markdown("**Recommendation**: Data Unavailable")
+
+# Portfolio Summary: Total Market Cap of Portfolio
+st.header("Portfolio Summary")
+total_market_cap = 0
+for ticker in portfolio_df["Ticker"]:
+    stock_info = yf.Ticker(ticker).info
+    total_market_cap += stock_info.get('marketCap', 0)
+
+st.markdown(f"**Total Market Cap of Portfolio**: ${total_market_cap / 1_000_000}M")
+
+# Portfolio Performance Visualization: Combined Price Trend of all stocks
+st.subheader("Portfolio Performance (Price Trend)")
+fig3 = go.Figure()
+
+for ticker in portfolio_df["Ticker"]:
+    stock_data, _ = fetch_stock_data(ticker)
+    fig3.add_trace(go.Scatter(x=stock_data.index, y=stock_data['Close'], mode='lines', name=ticker))
+
+fig3.update_layout(title="Portfolio Price Trend (Last 1 Year)", xaxis_title="Date", yaxis_title="Price (USD)")
+st.plotly_chart(fig3)
+
+# Aggregated Portfolio Metrics: Example of average P/E ratio
+pe_ratios = []
+for ticker in portfolio_df["Ticker"]:
+    stock_info = yf.Ticker(ticker).info
+    pe_ratios.append(stock_info.get('trailingPE', 0))
+
+average_pe = np.mean(pe_ratios)
+st.write(f"**Average P/E Ratio of Portfolio**: {average_pe:.2f}")
