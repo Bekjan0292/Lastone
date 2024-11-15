@@ -1,6 +1,5 @@
 streamlit
 yfinance
 pandas
+altair
 plotly
-streamlit-echarts
-streamlit-aggrid
