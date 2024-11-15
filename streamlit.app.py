@@ -1,109 +1,66 @@
 import streamlit as st
 import yfinance as yf
 import pandas as pd
+import matplotlib.pyplot as plt
 
-# Page settings
-st.set_page_config(
-    page_title="Stock Analysis",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
+# Title and Description
+st.title("Fundamental Analysis Automation")
+st.markdown("""
+This app automates fundamental analysis by analyzing economic, industry, 
+and company-specific factors. It also provides interactive visualizations 
+to help you make informed investment decisions.
+""")
 
-# Cache the function to reduce API calls
-@st.cache_data
-def fetch_selected_company_data(ticker):
-    try:
-        stock = yf.Ticker(ticker)
-        return {
-            "shortName": stock.info.get("shortName", "N/A"),
-            "sector": stock.info.get("sector", "N/A"),
-            "industry": stock.info.get("industry", "N/A"),
-            "website": stock.info.get("website", "N/A"),
-            "longBusinessSummary": stock.info.get("longBusinessSummary", "N/A"),
-            "totalRevenue": stock.info.get("totalRevenue", "N/A"),
-            "netIncomeToCommon": stock.info.get("netIncomeToCommon", "N/A"),
-            "profitMargins": stock.info.get("profitMargins", "N/A"),
-            "revenueGrowth": stock.info.get("revenueGrowth", "N/A"),
-            "earningsGrowth": stock.info.get("earningsGrowth", "N/A"),
-            "debtToEquity": stock.info.get("debtToEquity", "N/A"),
-            "currentRatio": stock.info.get("currentRatio", "N/A"),
-            "quickRatio": stock.info.get("quickRatio", "N/A"),
-        }
-    except Exception as e:
-        st.error(f"Error fetching data for {ticker}: {e}")
-        return None
+# User Input: Stock Ticker
+ticker = st.text_input("Enter Stock Ticker (e.g., AAPL, MSFT):", value="AAPL")
 
-def display_fundamental_analysis(data):
-    st.header("Fundamental Analysis")
-    st.subheader("Basic Information")
-    st.write(f"**Name:** {data['shortName']}")
-    st.write(f"**Sector:** {data['sector']}")
-    st.write(f"**Industry:** {data['industry']}")
-    st.write(f"**Website:** [Visit Website]({data['website']})")
+# Fetch Stock Data
+if ticker:
+    stock = yf.Ticker(ticker)
+    info = stock.info
+    financials = stock.financials
+    balance_sheet = stock.balance_sheet
+    cash_flow = stock.cashflow
 
-    st.subheader("Company Description")
-    st.write(data["longBusinessSummary"])
+    # Display Key Information
+    st.header(f"Company Overview: {info['shortName']}")
+    st.subheader("Summary")
+    st.write(info.get('longBusinessSummary', 'No description available.'))
+    
+    st.subheader("Key Metrics")
+    st.metric("Market Cap", f"${info['marketCap']:,}")
+    st.metric("PE Ratio (TTM)", info.get('trailingPE', 'N/A'))
+    st.metric("Dividend Yield", f"{info.get('dividendYield', 0) * 100:.2f}%")
 
-    st.subheader("Financial Metrics")
-    financial_data = {
-        "Total Revenue": data["totalRevenue"],
-        "Net Income": data["netIncomeToCommon"],
-        "Profit Margin": data["profitMargins"],
-        "Revenue Growth (YoY)": data["revenueGrowth"],
-        "Earnings Growth (YoY)": data["earningsGrowth"]
+    # Financial Statement Trends
+    st.subheader("Financial Trends")
+    st.markdown("Revenue and Net Income trends over the last 4 years.")
+    fig, ax = plt.subplots()
+    financials.loc['Total Revenue'].plot(kind='line', label='Revenue', ax=ax)
+    financials.loc['Net Income'].plot(kind='line', label='Net Income', ax=ax)
+    ax.set_title("Revenue vs. Net Income")
+    ax.legend()
+    st.pyplot(fig)
+
+    # Ratio Analysis
+    st.subheader("Financial Ratios")
+    ratios = {
+        "P/E Ratio": info.get("trailingPE"),
+        "Price/Book": info.get("priceToBook"),
+        "Return on Equity (ROE)": info.get("returnOnEquity"),
+        "Debt/Equity": info.get("debtToEquity"),
     }
-    st.table(pd.DataFrame(financial_data.items(), columns=["Metric", "Value"]))
+    st.write(pd.DataFrame(ratios.items(), columns=["Ratio", "Value"]))
 
-    st.subheader("Debt and Leverage Metrics")
-    debt_data = {
-        "Debt to Equity Ratio": data["debtToEquity"],
-        "Current Ratio": data["currentRatio"],
-        "Quick Ratio": data["quickRatio"]
-    }
-    st.table(pd.DataFrame(debt_data.items(), columns=["Metric", "Value"]))
+    # Industry Comparison (Placeholder)
+    st.subheader("Industry Comparison")
+    st.write("Coming soon: Peer comparison within the same sector.")
 
-# Page navigation logic
-if "page" not in st.session_state:
-    st.session_state.page = "Home"
+    # Download Report
+    if st.button("Download Report"):
+        report = pd.DataFrame(ratios.items(), columns=["Ratio", "Value"])
+        report.to_csv("financial_report.csv")
+        st.write("Report downloaded as `financial_report.csv`.")
 
-if st.session_state.page == "Home":
-    st.title("Welcome to Stock Analysis")
-    st.subheader("Step 1: Choose a Company")
-    company = st.text_input("Enter the company symbol (e.g., AAPL for Apple):")
-
-    st.subheader("Step 2: Select Type of Analysis")
-    analysis_type = st.radio(
-        "Choose the type of analysis:",
-        ("Fundamental Analysis", "Technical Analysis")
-    )
-
-    st.subheader("What is this Analysis?")
-    if analysis_type == "Fundamental Analysis":
-        st.markdown("""
-            **Fundamental Analysis** evaluates a company's intrinsic value by analyzing economic, financial, and qualitative factors.
-        """)
-    elif analysis_type == "Technical Analysis":
-        st.markdown("""
-            **Technical Analysis** analyzes statistical trends from trading activity to identify trading opportunities.
-        """)
-
-    if company and analysis_type == "Fundamental Analysis":
-        if st.button("Go to Fundamental Analysis"):
-            with st.spinner("Fetching company data..."):
-                data = fetch_selected_company_data(company)
-                if data:
-                    st.session_state.page = "Fundamental Analysis"
-                    st.session_state.company_data = data
-                else:
-                    st.error("Failed to fetch company data. Please try again.")
-
-elif st.session_state.page == "Fundamental Analysis":
-    st.title("Fundamental Analysis")
-    data = st.session_state.get("company_data", None)
-
-    if data:
-        display_fundamental_analysis(data)
-    else:
-        st.error("No data available. Please return to the Home page.")
-    if st.button("Back to Home"):
-        st.session_state.page = "Home"
+else:
+    st.info("Please enter a stock ticker to begin analysis.")
