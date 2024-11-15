@@ -1,7 +1,6 @@
 import streamlit as st
-import requests
-import pandas as pd
 import yfinance as yf
+import pandas as pd
 import plotly.graph_objs as go
 
 # Streamlit page settings
@@ -36,51 +35,44 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Helper function to fetch stock data from Yahoo Finance API
-@st.cache_data
-def fetch_stock_data(ticker, modules="assetProfile,price"):
-    try:
-        url = f"https://query1.finance.yahoo.com/v10/finance/quoteSummary/{ticker}?modules={modules}"
-        headers = {"User-Agent": "Mozilla/5.0"}
-        response = requests.get(url, headers=headers)
-        response.raise_for_status()  # Raise HTTPError for bad responses
-        data = response.json()
-        return data["quoteSummary"]["result"][0]
-    except Exception as e:
-        st.error(f"Error fetching data: {e}")
-        return None
-
 # Sidebar inputs
 st.sidebar.header("Options")
 ticker = st.sidebar.text_input("Stock Symbol", "AAPL")
 fetch_data = st.sidebar.button("Fetch Data")
 
-# Display company profile
-def display_company_profile(data):
-    profile = data.get("assetProfile", {})
-    price_data = data.get("price", {})
+# Function to fetch stock data using yfinance
+@st.cache_data
+def fetch_stock_data(ticker):
+    try:
+        stock = yf.Ticker(ticker)
+        return {
+            "info": stock.info,
+            "history": stock.history(period="1y")
+        }
+    except Exception as e:
+        st.error(f"Error fetching data with yfinance: {e}")
+        return None
 
+# Display company profile
+def display_company_profile(info):
     st.subheader("Company Profile")
-    st.metric("Sector", profile.get("sector", "N/A"))
-    st.metric("Industry", profile.get("industry", "N/A"))
-    st.metric("Website", profile.get("website", "N/A"))
-    st.metric("Market Cap", price_data.get("marketCap", {}).get("fmt", "N/A"))
+    st.metric("Sector", info.get("sector", "N/A"))
+    st.metric("Industry", info.get("industry", "N/A"))
+    st.metric("Website", info.get("website", "N/A"))
+    st.metric("Market Cap", f"${info.get('marketCap', 'N/A'):,}" if info.get("marketCap") else "N/A")
 
     with st.expander("About the Company"):
-        st.write(profile.get("longBusinessSummary", "N/A"))
+        st.write(info.get("longBusinessSummary", "N/A"))
 
 # Display financial metrics in a table
-def display_financial_metrics(data):
-    price_data = data.get("price", {})
-    profile = data.get("assetProfile", {})
+def display_financial_metrics(info):
     financial_metrics = {
-        "P/E Ratio": price_data.get("trailingPE", {}).get("fmt", "N/A"),
-        "P/B Ratio": price_data.get("priceToBook", {}).get("fmt", "N/A"),
-        "EPS": price_data.get("epsCurrentYear", {}).get("fmt", "N/A"),
-        "Dividend Yield": price_data.get("dividendYield", {}).get("fmt", "N/A"),
-        "Profit Margin": profile.get("profitMargins", {}).get("fmt", "N/A"),
-        "Current Ratio": profile.get("currentRatio", "N/A"),
-        "ROE": profile.get("returnOnEquity", {}).get("fmt", "N/A"),
+        "P/E Ratio": info.get("trailingPE", "N/A"),
+        "P/B Ratio": info.get("priceToBook", "N/A"),
+        "EPS": info.get("trailingEps", "N/A"),
+        "Dividend Yield": info.get("dividendYield", "N/A"),
+        "Profit Margin": info.get("profitMargins", "N/A"),
+        "ROE": info.get("returnOnEquity", "N/A"),
     }
 
     st.subheader("Financial Metrics")
@@ -88,38 +80,32 @@ def display_financial_metrics(data):
     st.table(metric_df)
 
 # Display stock price chart
-def display_stock_chart(ticker):
+def display_stock_chart(history, ticker):
     st.subheader("Stock Price Chart")
-    try:
-        stock_data = yf.download(ticker, period="1y", progress=False)
-        if stock_data.empty:
-            st.error("No stock data available for the selected ticker.")
-            return
+    if history.empty:
+        st.error("No stock data available for the selected ticker.")
+        return
 
-        fig = go.Figure(data=[go.Candlestick(
-            x=stock_data.index,
-            open=stock_data["Open"],
-            high=stock_data["High"],
-            low=stock_data["Low"],
-            close=stock_data["Close"],
-            increasing_line_color="green",
-            decreasing_line_color="red"
-        )])
-        fig.update_layout(
-            title=f"{ticker} Stock Price (1 Year)",
-            xaxis_title="Date",
-            yaxis_title="Price (USD)"
-        )
-        st.plotly_chart(fig)
-    except Exception as e:
-        st.error(f"Error displaying stock chart: {e}")
+    fig = go.Figure(data=[go.Candlestick(
+        x=history.index,
+        open=history["Open"],
+        high=history["High"],
+        low=history["Low"],
+        close=history["Close"],
+        increasing_line_color="green",
+        decreasing_line_color="red"
+    )])
+    fig.update_layout(
+        title=f"{ticker.upper()} Stock Price (1 Year)",
+        xaxis_title="Date",
+        yaxis_title="Price (USD)"
+    )
+    st.plotly_chart(fig)
 
 # Investment recommendation
-def display_recommendation(data):
-    price_data = data.get("price", {})
-    pe_ratio = price_data.get("trailingPE", {}).get("raw")
-
-    if pe_ratio is not None:
+def display_recommendation(info):
+    pe_ratio = info.get("trailingPE")
+    if pe_ratio:
         st.subheader("Investment Recommendation")
         if pe_ratio < 15:
             st.write("**Recommendation:** Buy - Low P/E ratio may indicate undervaluation.")
@@ -136,13 +122,16 @@ def main():
 
     if fetch_data:
         st.subheader(f"Analyzing {ticker.upper()} Data")
-        data = fetch_stock_data(ticker)
+        stock_data = fetch_stock_data(ticker)
 
-        if data:
-            display_company_profile(data)
-            display_financial_metrics(data)
-            display_recommendation(data)
-            display_stock_chart(ticker)
+        if stock_data:
+            info = stock_data["info"]
+            history = stock_data["history"]
+
+            display_company_profile(info)
+            display_financial_metrics(info)
+            display_recommendation(info)
+            display_stock_chart(history, ticker)
         else:
             st.error("Failed to fetch data. Please check the ticker symbol and try again.")
 
