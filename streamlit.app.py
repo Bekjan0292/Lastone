@@ -76,4 +76,50 @@ def display_growth_metrics(info):
     growth_df = pd.DataFrame(list(growth_metrics.items()), columns=["Metric", "Value"])
     st.table(growth_df)
 
-# Display interactive stock price chart with
+# Display interactive stock price chart with Plotly
+def display_stock_chart(history, ticker):
+    st.subheader("Stock Price Chart")
+    
+    if history.empty:
+        st.error("No stock data available for the selected ticker.")
+        return
+
+    fig = go.Figure(data=[go.Candlestick(
+        x=history.index,
+        open=history["Open"],
+        high=history["High"],
+        low=history["Low"],
+        close=history["Close"],
+        increasing_line_color="green",
+        decreasing_line_color="red"
+    )])
+    fig.update_layout(
+        title=f"{ticker.upper()} Stock Price (1 Year)",
+        xaxis_title="Date",
+        yaxis_title="Price (USD)",
+        xaxis_rangeslider_visible=True
+    )
+    st.plotly_chart(fig)
+
+# Main App
+def main():
+    st.title("Comprehensive Stock Analysis Dashboard")
+
+    if fetch_data:
+        st.subheader(f"Analyzing {ticker.upper()} Data")
+        stock_data = fetch_stock_data(ticker)
+
+        if stock_data:
+            info = stock_data["info"]
+            history = stock_data["history"]
+
+            # Display different sections for a comprehensive analysis
+            display_company_overview(info)
+            display_key_financial_ratios(info)
+            display_growth_metrics(info)
+            display_stock_chart(history, ticker)
+        else:
+            st.error("Failed to fetch data. Please check the ticker symbol and try again.")
+
+if __name__ == "__main__":
+    main()
