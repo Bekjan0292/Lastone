@@ -60,12 +60,12 @@ def calculate_macd(data):
 # Main app
 def main():
     st.sidebar.header("Options")
-    ticker = st.sidebar.text_input("Stock symbol:", "AAPL")
-    start_date = st.sidebar.date_input("Start Date", pd.to_datetime("2021-01-01"))
-    end_date = st.sidebar.date_input("End Date", pd.to_datetime("today"))
+    ticker = st.sidebar.text_input("Stock symbol:", "AAPL", key="ticker_input")
+    start_date = st.sidebar.date_input("Start Date", pd.to_datetime("2021-01-01"), key="start_date_input")
+    end_date = st.sidebar.date_input("End Date", pd.to_datetime("today"), key="end_date_input")
 
     # Analysis selection
-    analysis_type = st.sidebar.selectbox("Select Analysis Type:", ["Fundamental Analysis", "Technical Analysis"])
+    analysis_type = st.sidebar.selectbox("Select Analysis Type:", ["Fundamental Analysis", "Technical Analysis"], key="analysis_selectbox")
 
     # Load data
     stock_data = load_stock_data(ticker, start_date, end_date)
@@ -153,10 +153,4 @@ def main():
         fig = go.Figure()
         fig.add_trace(go.Scatter(x=stock_data.index, y=stock_data['Close'], mode='lines', name="Price"))
         fig.add_trace(go.Scatter(x=stock_data.index, y=stock_data['SMA_Short'], mode='lines', name=f"SMA ({short_ma_days} days)"))
-        fig.add_trace(go.Scatter(x=stock_data.index, y=stock_data['SMA_Long'], mode='lines', name=f"SMA ({long_ma_days} days)"))
-        st.plotly_chart(fig)
-
-        st.write("### Bollinger Bands")
-        fig = go.Figure()
-        fig.add_trace(go.Scatter(x=stock_data.index, y=stock_data['UpperBB'], mode='lines', name="Upper Band"))
-        fig.add_trace(go.Scatter(x=stock_data.index, y=stock_data['MiddleBB'],
+        fig.add_trace(go.Scatter(x=stock_data.index, y=stock_data['SMA_Long'],
