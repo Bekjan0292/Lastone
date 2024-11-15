@@ -10,31 +10,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Enhanced CSS for custom theme
-st.markdown("""
-    <style>
-        body {
-            background-color: #f7f9fc;
-            color: #333;
-        }
-        .block-container {
-            padding: 2rem;
-        }
-        h1, h2, h3 {
-            color: #2b5da4;
-        }
-        .stButton>button {
-            background-color: #ff7f50 !important;
-            color: white;
-            border-radius: 5px;
-        }
-        .stTable {
-            background-color: #ffffff;
-            color: #333;
-        }
-    </style>
-""", unsafe_allow_html=True)
-
 # Sidebar inputs
 st.sidebar.header("Options")
 ticker = st.sidebar.text_input("Stock Symbol", "AAPL")
@@ -53,15 +28,16 @@ def fetch_stock_data(ticker):
         st.error(f"Error fetching data with yfinance: {e}")
         return None
 
-# Display company profile
-def display_company_profile(info):
-    st.subheader("Company Profile")
+# Display fundamental analysis (similar to attached screenshot)
+def display_fundamental_analysis(info):
+    st.header("Fundamental Analysis")
+    
     st.metric("Sector", info.get("sector", "N/A"))
     st.metric("Industry", info.get("industry", "N/A"))
     st.metric("Website", info.get("website", "N/A"))
     st.metric("Market Cap", f"${info.get('marketCap', 'N/A'):,}" if info.get("marketCap") else "N/A")
 
-    with st.expander("About the Company"):
+    with st.expander("About Company"):
         st.write(info.get("longBusinessSummary", "N/A"))
 
 # Display financial metrics in a table
@@ -79,9 +55,9 @@ def display_financial_metrics(info):
     metric_df = pd.DataFrame(list(financial_metrics.items()), columns=["Metric", "Value"])
     st.table(metric_df)
 
-# Display stock price chart
+# Display interactive stock price chart
 def display_stock_chart(history, ticker):
-    st.subheader("Stock Price Chart")
+    st.subheader("Interactive Stock Price Chart")
     if history.empty:
         st.error("No stock data available for the selected ticker.")
         return
@@ -98,23 +74,10 @@ def display_stock_chart(history, ticker):
     fig.update_layout(
         title=f"{ticker.upper()} Stock Price (1 Year)",
         xaxis_title="Date",
-        yaxis_title="Price (USD)"
+        yaxis_title="Price (USD)",
+        xaxis_rangeslider_visible=True
     )
     st.plotly_chart(fig)
-
-# Investment recommendation
-def display_recommendation(info):
-    pe_ratio = info.get("trailingPE")
-    if pe_ratio:
-        st.subheader("Investment Recommendation")
-        if pe_ratio < 15:
-            st.write("**Recommendation:** Buy - Low P/E ratio may indicate undervaluation.")
-        elif pe_ratio > 25:
-            st.write("**Recommendation:** Sell - High P/E ratio may indicate overvaluation.")
-        else:
-            st.write("**Recommendation:** Hold - Fairly valued.")
-    else:
-        st.warning("P/E Ratio not available for recommendation.")
 
 # Main App
 def main():
@@ -128,9 +91,8 @@ def main():
             info = stock_data["info"]
             history = stock_data["history"]
 
-            display_company_profile(info)
+            display_fundamental_analysis(info)
             display_financial_metrics(info)
-            display_recommendation(info)
             display_stock_chart(history, ticker)
         else:
             st.error("Failed to fetch data. Please check the ticker symbol and try again.")
