@@ -3,9 +3,10 @@ import yfinance as yf
 import pandas as pd
 
 # Title and Introduction
-st.title("Expanded Fundamental Analysis with Buy, Hold, Sell Recommendations")
+st.title("Automated Fundamental Analysis WebApp")
 st.markdown("""
-This app provides a detailed fundamental analysis of a stock, including key financial metrics and overall recommendations (Buy, Hold, Sell) to help you make informed investment decisions.
+This app performs an automated fundamental analysis of a stock, providing key metrics such as P/E Ratio, P/B Ratio, Dividend Yield, ROE, and Debt-to-Equity ratio. 
+It also gives a recommendation on whether to **Buy**, **Hold**, or **Sell** based on the analysis.
 """)
 
 # User Input: Stock Ticker
