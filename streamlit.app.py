@@ -1,125 +1,73 @@
 import streamlit as st
-import yfinance as yf
-import pandas as pd
-import altair as alt
-import plotly.graph_objs as go
 
-# Streamlit page settings
+# Настройки страницы
 st.set_page_config(
-    page_title="Comprehensive Stock Analysis Dashboard",
+    page_title="Stock Analysis Dashboard",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Sidebar inputs
-st.sidebar.header("Options")
-ticker = st.sidebar.text_input("Stock Symbol", "AAPL")
-fetch_data = st.sidebar.button("Fetch Data")
-
-# Function to fetch stock data using yfinance
-@st.cache_data
-def fetch_stock_data(ticker):
-    try:
-        stock = yf.Ticker(ticker)
-        return {
-            "info": stock.info,
-            "history": stock.history(period="1y")
+# Темный фон и стиль через CSS
+st.markdown("""
+    <style>
+        body {
+            background-image: url('https://source.unsplash.com/1920x1080/?finance,stock');
+            background-size: cover;
+            background-attachment: fixed;
+            color: #e0e0e0;
+            font-family: Arial, sans-serif;
         }
-    except Exception as e:
-        st.error(f"Error fetching data with yfinance: {e}")
-        return None
+        .block-container {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 2rem;
+            border-radius: 10px;
+        }
+        h1, h2, h3 {
+            color: #00c853;
+        }
+        .stButton>button {
+            background-color: #1b1b1b;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+        }
+        .stButton>button:hover {
+            background-color: #00c853;
+        }
+    </style>
+""", unsafe_allow_html=True)
 
-# Display Company Overview
-def display_company_overview(info):
-    st.header("Company Overview")
-    st.subheader(info.get("shortName", "N/A"))
-    st.write(info.get("longBusinessSummary", "N/A"))
+# Заголовок сайта
+st.title("Stock Analysis Dashboard")
 
-# Display Key Financial Ratios using Altair bar chart
-def display_key_financial_ratios(info):
-    st.subheader("Key Financial Ratios")
-    
-    financial_ratios = {
-        "P/E Ratio": info.get("trailingPE", 0),
-        "P/B Ratio": info.get("priceToBook", 0),
-        "EPS": info.get("trailingEps", 0),
-        "Dividend Yield": info.get("dividendYield", 0),
-        "Profit Margin": info.get("profitMargins", 0),
-        "ROE": info.get("returnOnEquity", 0),
-    }
-    
-    # Convert to DataFrame
-    ratios_df = pd.DataFrame(list(financial_ratios.items()), columns=["Metric", "Value"])
+# Опция выбора компании
+st.subheader("Step 1: Choose a Company")
+company = st.text_input("Enter the company symbol (e.g., AAPL for Apple, MSFT for Microsoft):")
 
-    # Create Altair chart
-    bar_chart = alt.Chart(ratios_df).mark_bar().encode(
-        x=alt.X("Metric", sort=None),
-        y="Value",
-        tooltip=["Metric", "Value"]
-    ).properties(
-        width=600,
-        height=400,
-        title="Key Financial Ratios"
-    )
-    
-    st.altair_chart(bar_chart)
+# Опции выбора типа анализа
+st.subheader("Step 2: Select Type of Analysis")
+analysis_type = st.radio(
+    "Choose the type of analysis:",
+    ("Fundamental Analysis", "Technical Analysis")
+)
 
-# Display Growth Metrics
-def display_growth_metrics(info):
-    st.subheader("Growth Metrics")
-    
-    growth_metrics = {
-        "Revenue Growth (3Y)": info.get("revenueGrowth", "N/A"),
-        "Earnings Growth (3Y)": info.get("earningsGrowth", "N/A"),
-    }
-    
-    growth_df = pd.DataFrame(list(growth_metrics.items()), columns=["Metric", "Value"])
-    st.table(growth_df)
+# Объяснение выбранного анализа
+st.subheader("What is this Analysis?")
+if analysis_type == "Fundamental Analysis":
+    st.write("""
+        **Fundamental Analysis** is a method of evaluating a company's intrinsic value by analyzing related economic, financial, and qualitative and quantitative factors. 
+        It looks at revenue, earnings, future growth, return on equity, profit margins, and other data to determine a company’s underlying value and potential for growth.
+    """)
+elif analysis_type == "Technical Analysis":
+    st.write("""
+        **Technical Analysis** is a trading discipline that evaluates investments and identifies trading opportunities by analyzing statistical trends gathered from trading activity. 
+        It focuses on patterns in price movements, volume, and other charting tools to forecast future price movements.
+    """)
 
-# Display interactive stock price chart with Plotly
-def display_stock_chart(history, ticker):
-    st.subheader("Stock Price Chart")
-    
-    if history.empty:
-        st.error("No stock data available for the selected ticker.")
-        return
-
-    fig = go.Figure(data=[go.Candlestick(
-        x=history.index,
-        open=history["Open"],
-        high=history["High"],
-        low=history["Low"],
-        close=history["Close"],
-        increasing_line_color="green",
-        decreasing_line_color="red"
-    )])
-    fig.update_layout(
-        title=f"{ticker.upper()} Stock Price (1 Year)",
-        xaxis_title="Date",
-        yaxis_title="Price (USD)",
-        xaxis_rangeslider_visible=True
-    )
-    st.plotly_chart(fig)
-
-# Main App
-def main():
-    st.title("Comprehensive Stock Analysis Dashboard")
-
-    if fetch_data:
-        st.subheader(f"Analyzing {ticker.upper()} Data")
-        stock_data = fetch_stock_data(ticker)
-
-        if stock_data:
-            info = stock_data["info"]
-            history = stock_data["history"]
-
-            # Display different sections for a comprehensive analysis
-            display_company_overview(info)
-            display_key_financial_ratios(info)
-            display_growth_metrics(info)
-            display_stock_chart(history, ticker)
-        else:
-            st.error("Failed to fetch data. Please check the ticker symbol and try again.")
-
-if __name__ == "__main__":
-    main()
+# Интерактивная кнопка для перехода к анализу
+if company:
+    st.write(f"Selected Company: **{company.upper()}**")
+    if st.button("Proceed with Analysis"):
+        st.success(f"Starting {analysis_type.lower()} for {company.upper()}...")
