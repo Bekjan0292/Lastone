@@ -1,4 +1,5 @@
 import streamlit as st
+import os
 
 # Настройки страницы
 st.set_page_config(
@@ -7,38 +8,47 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Удалены фоновые цвета и картинки
-st.markdown("""
+# Проверка наличия фонового изображения
+background_path = "background.jpg"
+if not os.path.exists(background_path):
+    st.warning("Background image not found! Please ensure 'background.jpg' is in the app directory.")
+
+# CSS для добавления фонового изображения и черного текста
+st.markdown(f"""
     <style>
-        body {
+        body {{
             margin: 0;
             padding: 0;
+            background-image: url('{background_path}');
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
             font-family: Arial, sans-serif;
-            color: white;
-        }
-        .block-container {
+            color: black;
+        }}
+        .block-container {{
             padding: 2rem;
-        }
-        h1, h2, h3 {
-            color: white;
-        }
-        label, .stRadio label {
-            color: white;
-        }
-        .stTextInput>div>label {
-            color: white;
-        }
-        .stButton>button {
+        }}
+        h1, h2, h3 {{
+            color: black;
+        }}
+        label, .stRadio label {{
+            color: black;
+        }}
+        .stTextInput>div>label {{
+            color: black;
+        }}
+        .stButton>button {{
             background-color: #1b1b1b;
             color: white;
             border: none;
             border-radius: 5px;
             padding: 0.5rem 1rem;
             font-size: 1rem;
-        }
-        .stButton>button:hover {
+        }}
+        .stButton>button:hover {{
             background-color: #00c853;
-        }
+        }}
     </style>
 """, unsafe_allow_html=True)
 
