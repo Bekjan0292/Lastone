@@ -11,88 +11,66 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Проверка наличия фонового изображения
-background_path = "background.jpg"
-if not os.path.exists(background_path):
-    st.warning("Background image not found! Please ensure 'background.jpg' is in the app directory.")
-
-# CSS для добавления фонового изображения
-st.markdown(f"""
+# CSS для стилизации
+st.markdown("""
     <style>
-        body {{
+        body {
             margin: 0;
             padding: 0;
-            background-image: url('{background_path}');
-            background-size: cover;
-            background-attachment: fixed;
-            background-position: center;
             font-family: Arial, sans-serif;
-            color: black;
-        }}
-        .block-container {{
+        }
+        .block-container {
             padding: 2rem;
-            background: none; /* Удаляем фон для блока */
-        }}
-        h1, h2, h3 {{
+        }
+        h1, h2, h3 {
             color: black;
-        }}
-        label, .stRadio label {{
+        }
+        label, .stRadio label {
             color: black;
-        }}
-        .stTextInput>div>label {{
+        }
+        .stTextInput>div>label {
             color: black;
-        }}
-        .stButton>button {{
+        }
+        .stButton>button {
             background-color: #1b1b1b;
             color: white;
             border: none;
             border-radius: 5px;
             padding: 0.5rem 1rem;
             font-size: 1rem;
-        }}
-        .stButton>button:hover {{
+        }
+        .stButton>button:hover {
             background-color: #00c853;
-        }}
+        }
     </style>
 """, unsafe_allow_html=True)
 
 # Заголовок сайта
 st.title("Stock Analysis")
 
-# Опция выбора компании
+# Шаг 1: Ввод символа компании
 st.subheader("Step 1: Choose a Company")
 company = st.text_input("Enter the company symbol (e.g., AAPL for Apple, MSFT for Microsoft):")
 
-# Опции выбора типа анализа
+# Шаг 2: Выбор типа анализа
 st.subheader("Step 2: Select Type of Analysis")
 analysis_type = st.radio(
     "Choose the type of analysis:",
     ("Fundamental Analysis", "Technical Analysis")
 )
 
-# Объяснение выбранного анализа
+# Справочная информация о типах анализа
 st.subheader("What is this Analysis?")
 if analysis_type == "Fundamental Analysis":
     st.markdown("""
         **Fundamental Analysis** is a method of evaluating a company's intrinsic value by analyzing related economic, financial, and qualitative and quantitative factors. 
         It looks at revenue, earnings, future growth, return on equity, profit margins, and other data to determine a company’s underlying value and potential for growth.
-    """, unsafe_allow_html=True)
+    """)
 elif analysis_type == "Technical Analysis":
     st.markdown("""
         **Technical Analysis** is a trading discipline that evaluates investments and identifies trading opportunities by analyzing statistical trends gathered from trading activity. 
         It focuses on patterns in price movements, volume, and other charting tools to forecast future price movements.
-    """, unsafe_allow_html=True)
-
-# Интерактивная кнопка для перехода к анализу
-if company and analysis_type == "Fundamental Analysis":
-    # Загружаем данные компании
-    data = fetch_company_data(company)
-
-    if data:
-        # Передаем данные в функцию анализа
-        display_fundamental_analysis(data)
-    else:
-        st.error(f"Could not fetch data for {company}. Please check the ticker symbol.")
+    """)
 
 # Функция для получения данных через yfinance
 @st.cache_data
@@ -108,11 +86,11 @@ def fetch_company_data(ticker):
 def add_tooltip(text, tooltip):
     return f"<span title='{tooltip}' style='text-decoration: underline dotted;'>{text}</span>"
 
-# Отображение фундаментального анализа
+# Функция для отображения фундаментального анализа
 def display_fundamental_analysis(data):
     st.header("Fundamental Analysis")
     
-    # Общая информация
+    # 1. Общая информация
     st.subheader("Company Overview")
     st.write(f"**Name:** {data.get('shortName', 'N/A')}")
     st.write(f"**Sector:** {data.get('sector', 'N/A')}")
@@ -120,7 +98,7 @@ def display_fundamental_analysis(data):
     st.write(f"**Website:** [Visit Website]({data.get('website', 'N/A')})")
     st.write(f"**Description:** {data.get('longBusinessSummary', 'N/A')}")
 
-    # Финансовые показатели с подсказками
+    # 2. Финансовые показатели с подсказками
     st.subheader("Financial Performance")
     st.write("Analyzing the company's revenue, net income, and profit margin provides insights into its financial health.")
 
@@ -134,7 +112,7 @@ def display_fundamental_analysis(data):
     performance_df = pd.DataFrame(list(financial_performance.items()), columns=["Metric", "Value"])
     st.write(performance_df.to_html(escape=False, index=False), unsafe_allow_html=True)
 
-    # Показатели роста с подсказками
+    # 3. Показатели роста
     st.subheader("Growth Metrics")
     st.write("Growth metrics provide insights into how the company has grown over time in terms of revenue and earnings.")
 
@@ -146,7 +124,7 @@ def display_fundamental_analysis(data):
     growth_df = pd.DataFrame(list(growth_metrics.items()), columns=["Metric", "Value"])
     st.write(growth_df.to_html(escape=False, index=False), unsafe_allow_html=True)
 
-    # Долговая нагрузка
+    # 4. Долговая нагрузка
     st.subheader("Debt and Leverage")
     st.write("Evaluating the company's leverage provides a view of its financial risk.")
 
@@ -159,20 +137,7 @@ def display_fundamental_analysis(data):
     debt_df = pd.DataFrame(list(debt_ratios.items()), columns=["Metric", "Value"])
     st.write(debt_df.to_html(escape=False, index=False), unsafe_allow_html=True)
 
-    # Дивиденды
-    st.subheader("Dividend Analysis")
-    st.write("Dividends are a reflection of a company's profitability and its ability to return value to shareholders.")
-
-    dividend_data = {
-        add_tooltip("Dividend Yield", "Annual dividend payments as a percentage of the stock price."): data.get("dividendYield", "N/A"),
-        add_tooltip("Payout Ratio", "Proportion of earnings paid out as dividends."): data.get("payoutRatio", "N/A"),
-        add_tooltip("Five-Year Avg Dividend Yield", "Average dividend yield over the past five years."): data.get("fiveYearAvgDividendYield", "N/A")
-    }
-
-    dividend_df = pd.DataFrame(list(dividend_data.items()), columns=["Metric", "Value"])
-    st.write(dividend_df.to_html(escape=False, index=False), unsafe_allow_html=True)
-
-    # Графическое представление
+    # 5. Графическое представление
     st.subheader("Visual Representation of Financial Ratios")
     financial_ratios = {
         "P/E Ratio": data.get("trailingPE", 0),
@@ -195,3 +160,13 @@ def display_fundamental_analysis(data):
         template="plotly_dark"
     )
     st.plotly_chart(fig)
+
+# Если выбран фундаментальный анализ
+if company and analysis_type == "Fundamental Analysis":
+    st.subheader(f"Fundamental Analysis for {company.upper()}")
+    data = fetch_company_data(company)
+
+    if data:
+        display_fundamental_analysis(data)
+    else:
+        st.error("Failed to load company data. Please try again.")
