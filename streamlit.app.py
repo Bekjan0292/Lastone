@@ -72,4 +72,17 @@ analysis_type = st.radio(
 st.subheader("What is this Analysis?")
 if analysis_type == "Fundamental Analysis":
     st.markdown("""
-        **Fundamental Analysis** is a method of evaluating a company's intrinsic value by analyzing related
+        **Fundamental Analysis** is a method of evaluating a company's intrinsic value by analyzing related economic, financial, and qualitative and quantitative factors. 
+        It looks at revenue, earnings, future growth, return on equity, profit margins, and other data to determine a company’s underlying value and potential for growth.
+    """, unsafe_allow_html=True)
+elif analysis_type == "Technical Analysis":
+    st.markdown("""
+        **Technical Analysis** is a trading discipline that evaluates investments and identifies trading opportunities by analyzing statistical trends gathered from trading activity. 
+        It focuses on patterns in price movements, volume, and other charting tools to forecast future price movements.
+    """, unsafe_allow_html=True)
+
+# Интерактивная кнопка для перехода к анализу
+if company:
+    st.write(f"Selected Company: **{company.upper()}**")
+    if st.button("Proceed with Analysis"):
+        st.success(f"Starting {analysis_type.lower()} for {company.upper()}...")
