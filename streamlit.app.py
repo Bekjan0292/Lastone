@@ -1,154 +1,130 @@
 import streamlit as st
-import yfinance as yf
+import requests
 import pandas as pd
 import plotly.graph_objs as go
 from PIL import Image
 
 # Streamlit page settings
-st.set_page_config(page_title="Educational Stock Analysis", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="Interactive Stock Analysis", layout="wide", initial_sidebar_state="expanded")
 
-# Custom CSS for dark mode and background images
+# Enhanced CSS for a colorful theme
 st.markdown("""
     <style>
         body {
-            background-color: #2E2E2E;
-            color: white;
+            background-color: #f0f2f6;
+            color: #333;
         }
         .block-container {
-            padding-top: 2rem;
-            padding-bottom: 2rem;
-        }
-        .css-1kcyg20 {
-            background: url('https://images.unsplash.com/photo-1518606373770-05d404f929d1') no-repeat center center fixed;
-            background-size: cover;
+            padding: 2rem;
         }
         h1, h2, h3 {
-            color: #f1f1f1;
-        }
-        .stTextInput>div>div>input {
-            background-color: #3e3e3e;
-            color: white;
+            color: #2b5da4;
         }
         .stButton>button {
-            background-color: #6200ea;
+            background-color: #ff7f50;
             color: white;
+            border-radius: 5px;
         }
         .stTable {
-            background-color: #424242;
-            color: white;
+            background-color: #f7f9fc;
+            color: #333;
         }
         .stSidebar {
-            background-color: #222222;
+            background-color: #eff2f5;
+        }
+        .css-1kcyg20 {
+            background: url('https://images.unsplash.com/photo-1556741533-411cf82e4e2d') no-repeat center center fixed;
+            background-size: cover;
         }
     </style>
 """, unsafe_allow_html=True)
 
-# Helper functions
+# Helper function to fetch stock data
 @st.cache_data
-def load_stock_data(ticker, start_date, end_date):
-    stock = yf.Ticker(ticker)
-    return stock.history(start=start_date, end=end_date)
+def fetch_stock_data(ticker, modules="assetProfile,price"):
+    url = f"https://query1.finance.yahoo.com/v10/finance/quoteSummary/{ticker}?modules={modules}"
+    headers = {"User-Agent": "Mozilla/5.0"}
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        data = response.json()
+        return data["quoteSummary"]["result"][0]
+    else:
+        return None
 
-@st.cache_data
-def get_company_info(ticker):
-    stock = yf.Ticker(ticker)
-    return {
-        "Name": stock.info.get("shortName", "N/A"),
-        "Sector": stock.info.get("sector", "N/A"),
-        "Country": stock.info.get("country", "N/A"),
-        "PE Ratio": stock.info.get("trailingPE", "N/A"),
-        "PB Ratio": stock.info.get("priceToBook", "N/A"),
-        "EPS": stock.info.get("trailingEps", "N/A"),
-        "Revenue": stock.info.get("totalRevenue", "N/A"),
-        "Net Income": stock.info.get("netIncomeToCommon", "N/A"),
-        "Debt to Equity": stock.info.get("debtToEquity", "N/A"),
-        "Dividend Yield": stock.info.get("dividendYield", "N/A"),
-        "Profit Margin": stock.info.get("profitMargins", "N/A"),
-        "Current Ratio": stock.info.get("currentRatio", "N/A"),
-        "Quick Ratio": stock.info.get("quickRatio", "N/A"),
-        "ROE": stock.info.get("returnOnEquity", "N/A"),
-        "Logo": stock.info.get("logo_url", "N/A"),
-    }
+# Interactive sidebar for user inputs
+st.sidebar.header("Options")
+ticker = st.sidebar.text_input("Stock Symbol", "AAPL")
+buttonClicked = st.sidebar.button("Fetch Data")
 
-# Main app
+# Main App
 def main():
-    st.sidebar.header("Options")
-    ticker = st.sidebar.text_input("Stock symbol:", "AAPL")
-    start_date = st.sidebar.date_input("Start Date", pd.to_datetime("2021-01-01"))
-    end_date = st.sidebar.date_input("End Date", pd.to_datetime("today"))
+    st.title("Interactive Stock Analysis")
 
-    # Analysis selection
-    analysis_type = st.sidebar.selectbox("Select Analysis Type:", ["Fundamental Analysis", "Technical Analysis"])
+    if buttonClicked:
+        st.subheader(f"Analyzing {ticker} Data")
+        data = fetch_stock_data(ticker)
 
-    # Load data
-    stock_data = load_stock_data(ticker, start_date, end_date)
-    company_info = get_company_info(ticker)
+        if data:
+            # Display stock profile information
+            profile = data.get("assetProfile", {})
+            price_data = data.get("price", {})
 
-    if analysis_type == "Fundamental Analysis":
-        st.header(f"{company_info['Name']} - Fundamental Analysis")
+            st.write("### Company Profile")
+            st.metric("Sector", profile.get("sector", "N/A"))
+            st.metric("Industry", profile.get("industry", "N/A"))
+            st.metric("Website", profile.get("website", "N/A"))
+            st.metric("Market Cap", price_data.get("marketCap", {}).get("fmt", "N/A"))
 
-        # Display company logo
-        if company_info["Logo"] != "N/A":
-            logo = Image.open(company_info["Logo"])
-            st.image(logo, caption=f"{company_info['Name']} Logo", width=150)
+            with st.expander("About Company"):
+                st.write(profile.get("longBusinessSummary", "N/A"))
 
-        # Display basic company info
-        st.write("### Company Information")
-        st.write(f"**Sector:** {company_info['Sector']}")
-        st.write(f"**Country:** {company_info['Country']}")
+            # Display financial metrics in a colorful table
+            st.write("### Financial Metrics")
+            financial_metrics = {
+                "P/E Ratio": price_data.get("trailingPE", {}).get("fmt", "N/A"),
+                "P/B Ratio": price_data.get("priceToBook", {}).get("fmt", "N/A"),
+                "EPS": price_data.get("epsCurrentYear", {}).get("fmt", "N/A"),
+                "Dividend Yield": price_data.get("dividendYield", {}).get("fmt", "N/A"),
+                "Profit Margin": profile.get("profitMargins", {}).get("fmt", "N/A"),
+                "Current Ratio": profile.get("currentRatio", "N/A"),
+                "ROE": profile.get("returnOnEquity", {}).get("fmt", "N/A"),
+            }
 
-        # Display additional financial metrics in a table with explanations
-        st.write("### Financial Metrics")
-        metric_explanations = {
-            "P/E Ratio": "The Price-to-Earnings (P/E) ratio measures a company's current share price relative to its per-share earnings. A high P/E may indicate overvaluation.",
-            "P/B Ratio": "The Price-to-Book (P/B) ratio compares a company's market value to its book value. A ratio below 1 may suggest the stock is undervalued.",
-            "EPS": "Earnings Per Share (EPS) represents the portion of a company’s profit allocated to each outstanding share of common stock.",
-            "Revenue": "Revenue is the total income generated by the company from its operations. Growing revenue typically signals a healthy business.",
-            "Net Income": "Net Income is the company's total earnings, factoring in all expenses, taxes, and costs. Higher net income often indicates profitability.",
-            "Debt to Equity": "The Debt-to-Equity ratio compares a company's total debt to its shareholders' equity. A high ratio suggests the company is heavily financed by debt.",
-            "Dividend Yield": "The Dividend Yield shows the percentage of the stock's price that is paid to shareholders in dividends.",
-            "Profit Margin": "The Profit Margin shows what percentage of revenue turns into profit after all expenses. A higher margin is typically better.",
-            "Current Ratio": "The Current Ratio measures a company's ability to cover short-term obligations with its short-term assets.",
-            "Quick Ratio": "The Quick Ratio is similar to the current ratio, but excludes inventory, offering a stricter view of liquidity.",
-            "ROE": "Return on Equity (ROE) measures the profitability of a company in relation to its equity. A higher ROE is a sign of efficient management."
-        }
+            # Display metrics in a table format
+            metric_df = pd.DataFrame(list(financial_metrics.items()), columns=["Metric", "Value"])
+            st.table(metric_df)
 
-        # Displaying metrics and their explanations
-        for metric, value in company_info.items():
-            if metric in metric_explanations:
-                st.write(f"**{metric}:** {value}")
-                st.write(f"*Explanation:* {metric_explanations[metric]}")
-                st.markdown("---")
+            # Recommendations section
+            st.write("### Investment Recommendation")
+            recommendation = ""
+            if financial_metrics["P/E Ratio"] != "N/A":
+                pe_ratio = float(financial_metrics["P/E Ratio"])
+                if pe_ratio < 15:
+                    recommendation = "Buy - Low P/E ratio may indicate undervaluation."
+                elif pe_ratio > 25:
+                    recommendation = "Sell - High P/E ratio may indicate overvaluation."
+                else:
+                    recommendation = "Hold - Fairly valued."
+            st.write(f"**Recommendation:** {recommendation}")
 
-        # Create a financial summary table
-        df = pd.DataFrame.from_dict(company_info, orient='index', columns=['Value'])
-        st.table(df.T)
+            # Interactive stock chart with Plotly
+            st.write("### Stock Price Chart")
+            stock_data = yf.download(ticker, period="1y")
+            fig = go.Figure(data=[go.Candlestick(
+                x=stock_data.index,
+                open=stock_data["Open"],
+                high=stock_data["High"],
+                low=stock_data["Low"],
+                close=stock_data["Close"],
+                increasing_line_color="green",
+                decreasing_line_color="red"
+            )])
+            fig.update_layout(title=f"{ticker} Stock Price (1 Year)", xaxis_title="Date", yaxis_title="Price (USD)")
+            st.plotly_chart(fig)
 
-        # Recommendations (Example logic)
-        st.write("### Recommendation Based on Key Metrics")
-        recommendation = ""
-        description = ""
-        
-        # Example Recommendation Logic
-        if company_info['PE Ratio'] != "N/A":
-            if company_info['PE Ratio'] < 15:
-                recommendation = "Buy"
-                description = "The company is undervalued with a low P/E ratio, which may present a buying opportunity."
-            elif company_info['PE Ratio'] > 25:
-                recommendation = "Sell"
-                description = "The company appears overvalued with a high P/E ratio, suggesting it might be a good time to sell."
-            else:
-                recommendation = "Hold"
-                description = "The P/E ratio suggests the stock is fairly valued, and holding the stock may be the best option."
-        
-        st.write(f"**Recommendation:** {recommendation}")
-        st.write(f"**Explanation:** {description}")
+            st.success("Data successfully loaded and displayed.")
+        else:
+            st.error("Failed to fetch data. Please check the ticker symbol and try again.")
 
-    elif analysis_type == "Technical Analysis":
-        st.header(f"{company_info['Name']} - Technical Analysis")
-
-        # Technical analysis code here (same as before)
-        st.write("Technical analysis will be displayed here.")
-    
 if __name__ == "__main__":
     main()
