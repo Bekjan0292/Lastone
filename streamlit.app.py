@@ -2,6 +2,7 @@ import streamlit as st
 import yfinance as yf
 import pandas as pd
 import plotly.graph_objects as go
+import time
 
 # Настройки страницы
 st.set_page_config(
@@ -10,10 +11,11 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Функция для получения данных через yfinance
+# Функция для получения данных через yfinance с задержкой
 @st.cache_data
 def fetch_company_data(ticker):
     try:
+        time.sleep(2)  # Задержка для предотвращения блокировки
         stock = yf.Ticker(ticker)
         return stock.info
     except Exception as e:
