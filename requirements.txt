@@ -3,5 +3,4 @@ yfinance
 pandas
 numpy
 plotly
-scikit-learn
-wikipedia-api
+talib
