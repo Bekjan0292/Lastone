@@ -1,10 +1,9 @@
 import streamlit as st
 import yfinance as yf
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
-import talib as ta
+import ta
 
 # Title and Description
 st.title("Investment Analysis Dashboard: Fundamental and Technical Analysis")
@@ -75,8 +74,14 @@ if ticker:
 
     # Add technical indicators (RSI and MACD)
     st.subheader("RSI and MACD")
-    history['RSI'] = ta.RSI(history['Close'], timeperiod=14)
-    history['MACD'], history['MACD_signal'], _ = ta.MACD(history['Close'], fastperiod=12, slowperiod=26, signalperiod=9)
+    
+    # Calculate RSI using ta library
+    history['RSI'] = ta.momentum.RSIIndicator(history['Close'], window=14).rsi()
+    
+    # Calculate MACD using ta library
+    macd = ta.trend.MACD(history['Close'])
+    history['MACD'] = macd.macd()
+    history['MACD_signal'] = macd.macd_signal()
     
     fig, ax = plt.subplots(2, 1, figsize=(10, 8))
     
