@@ -84,12 +84,15 @@ elif analysis_type == "Technical Analysis":
     """, unsafe_allow_html=True)
 
 # Интерактивная кнопка для перехода к анализу
-if company:
-    st.write(f"Selected Company: **{company.upper()}**")
-    if st.button("Proceed with Analysis"):
-        st.success(f"Starting {analysis_type.lower()} for {company.upper()}...")
-if analysis_type == "Fundamental Analysis" and data:
-    display_fundamental_analysis(data)
+if company and analysis_type == "Fundamental Analysis":
+    # Загружаем данные компании
+    data = fetch_company_data(company)
+
+    if data:
+        # Передаем данные в функцию анализа
+        display_fundamental_analysis(data)
+    else:
+        st.error(f"Could not fetch data for {company}. Please check the ticker symbol.")
 
 # Функция для получения данных через yfinance
 @st.cache_data
