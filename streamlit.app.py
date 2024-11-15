@@ -14,10 +14,6 @@ def load_stock_data(ticker, start_date, end_date):
     stock = yf.Ticker(ticker)
     return stock.history(start=start_date, end=end_date)
 
-@st.cache_data
-import streamlit as st
-import yfinance as yf
-
 # Helper function to retrieve company info
 @st.cache_data
 def get_company_info(ticker):
