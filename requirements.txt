@@ -4,4 +4,4 @@ pandas
 matplotlib
 numpy
 plotly
-talib
+ta
