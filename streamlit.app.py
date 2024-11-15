@@ -4,10 +4,10 @@ import pandas as pd
 import plotly.graph_objects as go
 
 # Title and Introduction
-st.title("Automated Stock Fundamental Analysis")
+st.title("Stock Fundamental Analysis Dashboard")
 st.markdown("""
-This app performs an automated fundamental analysis of a stock, providing key metrics such as P/E Ratio, P/B Ratio, Dividend Yield, ROE, and Debt-to-Equity ratio.
-It also gives a recommendation on whether to **Buy**, **Hold**, or **Sell** based on the analysis.
+This dashboard performs a fundamental analysis of any stock, including key financial metrics such as P/E Ratio, P/B Ratio, Dividend Yield, ROE, and Debt-to-Equity ratio.
+It also visualizes historical stock data over the last year.
 """)
 
 # User Input: Stock Ticker
