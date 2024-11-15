@@ -7,29 +7,38 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Темный фон и стилизация через CSS
+# Фон с видео и стилизация текста
 st.markdown("""
     <style>
         body {
-            background-image: url('https://source.unsplash.com/1920x1080/?finance,stock');
-            background-size: cover;
-            background-attachment: fixed;
-            color: #e0e0e0;
+            margin: 0;
+            padding: 0;
+            background: black;
+            color: white;
             font-family: Arial, sans-serif;
         }
+        video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            min-width: 100%;
+            min-height: 100%;
+            z-index: -1;
+            object-fit: cover;
+        }
         .block-container {
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(0, 0, 0, 0.8);
             padding: 2rem;
             border-radius: 10px;
         }
         h1, h2, h3 {
-            color: #00c853;
+            color: white;
         }
         label, .stRadio label {
-            color: #e0e0e0;
+            color: white;
         }
         .stTextInput>div>label {
-            color: #e0e0e0;
+            color: white;
         }
         .stButton>button {
             background-color: #1b1b1b;
@@ -43,6 +52,10 @@ st.markdown("""
             background-color: #00c853;
         }
     </style>
+    <video autoplay loop muted>
+        <source src="https://www.w3schools.com/howto/rain.mp4" type="video/mp4">
+        Your browser does not support HTML5 video.
+    </video>
 """, unsafe_allow_html=True)
 
 # Заголовок сайта
