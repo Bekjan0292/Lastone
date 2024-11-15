@@ -1,27 +1,27 @@
 import streamlit as st
 import yfinance as yf
 import pandas as pd
+import plotly.graph_objects as go
 
 # Title and Introduction
-st.title("Automated Fundamental Analysis WebApp")
+st.title("Automated Stock Fundamental Analysis")
 st.markdown("""
-This app performs an automated fundamental analysis of a stock, providing key metrics such as P/E Ratio, P/B Ratio, Dividend Yield, ROE, and Debt-to-Equity ratio. 
+This app performs an automated fundamental analysis of a stock, providing key metrics such as P/E Ratio, P/B Ratio, Dividend Yield, ROE, and Debt-to-Equity ratio.
 It also gives a recommendation on whether to **Buy**, **Hold**, or **Sell** based on the analysis.
 """)
 
 # User Input: Stock Ticker
-ticker = st.text_input("Enter Stock Ticker (e.g., AAPL, MSFT):", value="AAPL")
+ticker = st.text_input("Enter Stock Ticker (e.g., AAPL, MSFT, NVDA):", value="NVDA")
 
 # Fetch Stock Data
 if ticker:
     stock = yf.Ticker(ticker)
     info = stock.info
-    financials = stock.financials
-    balance_sheet = stock.balance_sheet
+    historical_data = stock.history(period="1y")  # Get 1 year of data for stock price
 
     # ---- Fundamental Metrics ----
     st.header(f"Fundamental Analysis of {ticker}")
-    
+
     # Market Cap in millions
     market_cap = info['marketCap'] / 1_000_000
     st.metric("Market Cap (in millions)", f"${market_cap:,.0f}M")
@@ -165,6 +165,13 @@ if ticker:
 
     st.markdown(f"### Overall Recommendation: **{recommendation}**")
     st.markdown(f"<h3 style='color:{recommendation_color};'>{recommendation}</h3>", unsafe_allow_html=True)
+
+    # ---- Historical Stock Data ----
+    st.subheader("Stock Price History (Last 1 Year)")
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=historical_data.index, y=historical_data['Close'], mode='lines', name='Closing Price'))
+    fig.update_layout(title=f'{ticker} Closing Price (Last 1 Year)', xaxis_title='Date', yaxis_title='Price (USD)')
+    st.plotly_chart(fig)
 
 else:
     st.info("Please enter a stock ticker to begin analysis.")
