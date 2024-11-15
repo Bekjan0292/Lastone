@@ -7,7 +7,7 @@ import plotly.graph_objs as go
 
 # Streamlit page settings
 st.set_page_config(
-    page_title="Stock Analysis Dashboard",
+    page_title="Comprehensive Stock Analysis Dashboard",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -30,16 +30,18 @@ def fetch_stock_data(ticker):
         st.error(f"Error fetching data with yfinance: {e}")
         return None
 
-# Display fundamental analysis using streamlit-echarts for a radar chart
-def display_fundamental_analysis(info):
+# Display Company Overview
+def display_company_overview(info):
     st.header("Company Overview")
-    
-    # Display Company Details
     st.subheader(info.get("shortName", "N/A"))
     st.write(info.get("longBusinessSummary", "N/A"))
+
+# Display Key Financial Ratios using streamlit-echarts radar chart
+def display_key_financial_ratios(info):
+    st.subheader("Key Financial Ratios")
     
-    # Radar chart for financial metrics comparison
-    financial_data = {
+    # Financial Ratios
+    financial_ratios = {
         "P/E Ratio": info.get("trailingPE", 0),
         "P/B Ratio": info.get("priceToBook", 0),
         "EPS": info.get("trailingEps", 0),
@@ -49,7 +51,7 @@ def display_fundamental_analysis(info):
     }
 
     radar_option = {
-        "title": {"text": "Financial Metrics Comparison"},
+        "title": {"text": "Financial Ratios"},
         "radar": {
             "indicator": [
                 {"name": "P/E Ratio", "max": 50},
@@ -61,40 +63,62 @@ def display_fundamental_analysis(info):
             ]
         },
         "series": [{
-            "name": "Financial Metrics",
+            "name": "Financial Ratios",
             "type": "radar",
-            "data": [{"value": list(financial_data.values()), "name": "Metrics"}]
+            "data": [{"value": list(financial_ratios.values()), "name": "Ratios"}]
         }]
     }
 
     st_echarts(radar_option, height="400px")
 
-# Display financial metrics in a styled, interactive table using st_aggrid
-def display_financial_metrics(info):
-    st.subheader("Key Financial Metrics")
-
-    # Interactive table with AgGrid
-    financial_metrics = {
-        "Metric": ["P/E Ratio", "P/B Ratio", "EPS", "Dividend Yield", "Profit Margin", "ROE"],
-        "Value": [
-            info.get("trailingPE", "N/A"),
-            info.get("priceToBook", "N/A"),
-            info.get("trailingEps", "N/A"),
-            info.get("dividendYield", "N/A"),
-            info.get("profitMargins", "N/A"),
-            info.get("returnOnEquity", "N/A")
-        ]
-    }
-
-    metrics_df = pd.DataFrame(financial_metrics)
+# Display Growth Metrics
+def display_growth_metrics(info):
+    st.subheader("Growth Metrics")
     
-    # Configure AgGrid options for interactive experience
-    gb = GridOptionsBuilder.from_dataframe(metrics_df)
-    gb.configure_pagination(paginationAutoPageSize=True)
-    gb.configure_side_bar()  # Enable sidebar for filtering
-    gridOptions = gb.build()
+    growth_metrics = {
+        "Revenue Growth (3Y)": info.get("revenueGrowth", "N/A"),
+        "Earnings Growth (3Y)": info.get("earningsGrowth", "N/A"),
+    }
+    
+    growth_df = pd.DataFrame(list(growth_metrics.items()), columns=["Metric", "Value"])
+    st.table(growth_df)
 
-    AgGrid(metrics_df, gridOptions=gridOptions, theme='light')
+# Display Profitability Ratios
+def display_profitability_ratios(info):
+    st.subheader("Profitability Ratios")
+    
+    profitability_ratios = {
+        "Return on Assets (ROA)": info.get("returnOnAssets", "N/A"),
+        "Return on Equity (ROE)": info.get("returnOnEquity", "N/A"),
+        "Profit Margin": info.get("profitMargins", "N/A"),
+    }
+    
+    profitability_df = pd.DataFrame(list(profitability_ratios.items()), columns=["Metric", "Value"])
+    st.table(profitability_df)
+
+# Display Liquidity Ratios
+def display_liquidity_ratios(info):
+    st.subheader("Liquidity Ratios")
+    
+    liquidity_ratios = {
+        "Current Ratio": info.get("currentRatio", "N/A"),
+        "Quick Ratio": info.get("quickRatio", "N/A"),
+    }
+    
+    liquidity_df = pd.DataFrame(list(liquidity_ratios.items()), columns=["Metric", "Value"])
+    st.table(liquidity_df)
+
+# Display Leverage Ratios
+def display_leverage_ratios(info):
+    st.subheader("Leverage Ratios")
+    
+    leverage_ratios = {
+        "Debt to Equity Ratio": info.get("debtToEquity", "N/A"),
+        "Interest Coverage Ratio": info.get("interestCoverage", "N/A"),
+    }
+    
+    leverage_df = pd.DataFrame(list(leverage_ratios.items()), columns=["Metric", "Value"])
+    st.table(leverage_df)
 
 # Display interactive stock price chart with Plotly
 def display_stock_chart(history, ticker):
@@ -123,7 +147,7 @@ def display_stock_chart(history, ticker):
 
 # Main App
 def main():
-    st.title("Stock Analysis Dashboard")
+    st.title("Comprehensive Stock Analysis Dashboard")
 
     if fetch_data:
         st.subheader(f"Analyzing {ticker.upper()} Data")
@@ -133,8 +157,13 @@ def main():
             info = stock_data["info"]
             history = stock_data["history"]
 
-            display_fundamental_analysis(info)
-            display_financial_metrics(info)
+            # Display different sections for a comprehensive analysis
+            display_company_overview(info)
+            display_key_financial_ratios(info)
+            display_growth_metrics(info)
+            display_profitability_ratios(info)
+            display_liquidity_ratios(info)
+            display_leverage_ratios(info)
             display_stock_chart(history, ticker)
         else:
             st.error("Failed to fetch data. Please check the ticker symbol and try again.")
