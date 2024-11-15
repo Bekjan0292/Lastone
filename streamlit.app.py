@@ -1,101 +1,75 @@
 import streamlit as st
 import yfinance as yf
 import pandas as pd
-import plotly.graph_objects as go
-import time
 
-# Настройки страницы
+# Page settings
 st.set_page_config(
     page_title="Stock Analysis",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Функция для получения данных через yfinance с задержкой
+# Cache the function to reduce API calls
 @st.cache_data
-def fetch_company_data(ticker):
+def fetch_selected_company_data(ticker):
     try:
-        time.sleep(2)  # Задержка для предотвращения блокировки
         stock = yf.Ticker(ticker)
-        return stock.info
+        return {
+            "shortName": stock.info.get("shortName", "N/A"),
+            "sector": stock.info.get("sector", "N/A"),
+            "industry": stock.info.get("industry", "N/A"),
+            "website": stock.info.get("website", "N/A"),
+            "longBusinessSummary": stock.info.get("longBusinessSummary", "N/A"),
+            "totalRevenue": stock.info.get("totalRevenue", "N/A"),
+            "netIncomeToCommon": stock.info.get("netIncomeToCommon", "N/A"),
+            "profitMargins": stock.info.get("profitMargins", "N/A"),
+            "revenueGrowth": stock.info.get("revenueGrowth", "N/A"),
+            "earningsGrowth": stock.info.get("earningsGrowth", "N/A"),
+            "debtToEquity": stock.info.get("debtToEquity", "N/A"),
+            "currentRatio": stock.info.get("currentRatio", "N/A"),
+            "quickRatio": stock.info.get("quickRatio", "N/A"),
+        }
     except Exception as e:
         st.error(f"Error fetching data for {ticker}: {e}")
         return None
 
-# Функция для отображения фундаментального анализа
 def display_fundamental_analysis(data):
     st.header("Fundamental Analysis")
-    
-    # 1. Общая информация
-    st.subheader("Company Overview")
-    st.write(f"**Name:** {data.get('shortName', 'N/A')}")
-    st.write(f"**Sector:** {data.get('sector', 'N/A')}")
-    st.write(f"**Industry:** {data.get('industry', 'N/A')}")
-    st.write(f"**Website:** [Visit Website]({data.get('website', 'N/A')})")
-    st.write(f"**Description:** {data.get('longBusinessSummary', 'N/A')}")
+    st.subheader("Basic Information")
+    st.write(f"**Name:** {data['shortName']}")
+    st.write(f"**Sector:** {data['sector']}")
+    st.write(f"**Industry:** {data['industry']}")
+    st.write(f"**Website:** [Visit Website]({data['website']})")
 
-    # 2. Финансовые показатели
-    st.subheader("Financial Performance")
-    financial_performance = {
-        "Revenue (TTM)": data.get("totalRevenue", "N/A"),
-        "Net Income (TTM)": data.get("netIncomeToCommon", "N/A"),
-        "Profit Margin": data.get("profitMargins", "N/A"),
-        "Operating Margin": data.get("operatingMargins", "N/A")
+    st.subheader("Company Description")
+    st.write(data["longBusinessSummary"])
+
+    st.subheader("Financial Metrics")
+    financial_data = {
+        "Total Revenue": data["totalRevenue"],
+        "Net Income": data["netIncomeToCommon"],
+        "Profit Margin": data["profitMargins"],
+        "Revenue Growth (YoY)": data["revenueGrowth"],
+        "Earnings Growth (YoY)": data["earningsGrowth"]
     }
-    financial_df = pd.DataFrame(list(financial_performance.items()), columns=["Metric", "Value"])
-    st.table(financial_df)
+    st.table(pd.DataFrame(financial_data.items(), columns=["Metric", "Value"]))
 
-    # 3. Показатели роста
-    st.subheader("Growth Metrics")
-    growth_metrics = {
-        "Revenue Growth (Quarterly YoY)": data.get("revenueGrowth", "N/A"),
-        "Earnings Growth (Quarterly YoY)": data.get("earningsGrowth", "N/A")
+    st.subheader("Debt and Leverage Metrics")
+    debt_data = {
+        "Debt to Equity Ratio": data["debtToEquity"],
+        "Current Ratio": data["currentRatio"],
+        "Quick Ratio": data["quickRatio"]
     }
-    growth_df = pd.DataFrame(list(growth_metrics.items()), columns=["Metric", "Value"])
-    st.table(growth_df)
+    st.table(pd.DataFrame(debt_data.items(), columns=["Metric", "Value"]))
 
-    # 4. Долговая нагрузка
-    st.subheader("Debt and Leverage")
-    debt_ratios = {
-        "Debt to Equity Ratio": data.get("debtToEquity", "N/A"),
-        "Current Ratio": data.get("currentRatio", "N/A"),
-        "Quick Ratio": data.get("quickRatio", "N/A")
-    }
-    debt_df = pd.DataFrame(list(debt_ratios.items()), columns=["Metric", "Value"])
-    st.table(debt_df)
-
-    # 5. Графическое представление
-    st.subheader("Visual Representation of Financial Ratios")
-    financial_ratios = {
-        "P/E Ratio": data.get("trailingPE", 0),
-        "P/B Ratio": data.get("priceToBook", 0),
-        "Return on Equity (ROE)": data.get("returnOnEquity", 0),
-        "Profit Margin": data.get("profitMargins", 0)
-    }
-    fig = go.Figure()
-    fig.add_trace(go.Bar(
-        x=list(financial_ratios.keys()),
-        y=list(financial_ratios.values()),
-        marker_color='indigo'
-    ))
-    fig.update_layout(
-        title="Key Financial Ratios",
-        xaxis_title="Metrics",
-        yaxis_title="Values",
-        template="plotly_dark"
-    )
-    st.plotly_chart(fig)
-
-# Проверка состояния для определения текущей страницы
+# Page navigation logic
 if "page" not in st.session_state:
     st.session_state.page = "Home"
 
-# Логика переключения страниц
 if st.session_state.page == "Home":
-    # Стартовая страница
     st.title("Welcome to Stock Analysis")
     st.subheader("Step 1: Choose a Company")
-    company = st.text_input("Enter the company symbol (e.g., AAPL for Apple, MSFT for Microsoft):")
+    company = st.text_input("Enter the company symbol (e.g., AAPL for Apple):")
 
     st.subheader("Step 2: Select Type of Analysis")
     analysis_type = st.radio(
@@ -115,23 +89,21 @@ if st.session_state.page == "Home":
 
     if company and analysis_type == "Fundamental Analysis":
         if st.button("Go to Fundamental Analysis"):
-            st.session_state.page = "Fundamental Analysis"
-            st.session_state.company = company
+            with st.spinner("Fetching company data..."):
+                data = fetch_selected_company_data(company)
+                if data:
+                    st.session_state.page = "Fundamental Analysis"
+                    st.session_state.company_data = data
+                else:
+                    st.error("Failed to fetch company data. Please try again.")
 
 elif st.session_state.page == "Fundamental Analysis":
-    # Страница фундаментального анализа
     st.title("Fundamental Analysis")
+    data = st.session_state.get("company_data", None)
 
-    company = st.session_state.get("company", None)
-
-    if company:
-        data = fetch_company_data(company)
-        if data:
-            display_fundamental_analysis(data)
-        else:
-            st.error(f"Failed to load data for {company}. Please return to the Home page.")
+    if data:
+        display_fundamental_analysis(data)
     else:
-        st.error("No company selected. Please return to the Home page.")
-
+        st.error("No data available. Please return to the Home page.")
     if st.button("Back to Home"):
         st.session_state.page = "Home"
