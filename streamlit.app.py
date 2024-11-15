@@ -3,7 +3,7 @@ import yfinance as yf
 import pandas as pd
 import numpy as np
 import plotly.graph_objs as go
-import talib
+import ta  # Import the ta library
 
 # Streamlit page settings
 st.set_page_config(page_title="Enhanced Stock Analysis Dashboard", layout="wide", initial_sidebar_state="expanded")
@@ -17,7 +17,6 @@ def load_stock_data(ticker, start_date, end_date):
 @st.cache_data
 def get_company_info(ticker):
     stock = yf.Ticker(ticker)
-    st.write(stock.info)  # Debug: Print full info dictionary for troubleshooting
     return {
         "Sector": stock.info.get("sector", "N/A"),
         "Country": stock.info.get("country", "N/A"),
@@ -34,33 +33,14 @@ def get_company_info(ticker):
         "ROE": stock.info.get("returnOnEquity", "N/A"),
     }
 
-# Technical Indicators
+# Technical Indicators (Using 'ta' instead of 'TA-Lib')
 def calculate_bollinger_bands(data, period=20, std_dev=2):
-    upper_band, middle_band, lower_band = talib.BBANDS(data['Close'].values, timeperiod=period, nbdevup=std_dev, nbdevdn=std_dev)
-    return upper_band, middle_band, lower_band
+    bb = ta.volatility.BollingerBands(close=data['Close'], window=period, window_dev=std_dev)
+    return bb.bollinger_hband(), bb.bollinger_mavg(), bb.bollinger_lband()
 
 def calculate_stochastic_oscillator(data, period=14):
-    k, d = talib.STOCH(data['High'].values, data['Low'].values, data['Close'].values, fastk_period=period, slowk_period=3, slowd_period=3)
-    return k, d
-
-def calculate_sma(data, period=50):
-    return data['Close'].rolling(window=period).mean()
-
-def calculate_rsi(data, period=14):
-    delta = data['Close'].diff()
-    gain = np.where(delta > 0, delta, 0)
-    loss = np.where(delta < 0, -delta, 0)
-    avg_gain = pd.Series(gain).rolling(window=period).mean()
-    avg_loss = pd.Series(loss).rolling(window=period).mean()
-    rs = avg_gain / avg_loss
-    rsi = 100 - (100 / (1 + rs))
-    return rsi
-
-def calculate_macd(data):
-    ema12 = data['Close'].ewm(span=12, adjust=False).mean()
-    ema26 = data['Close'].ewm(span=26, adjust=False).mean()
-    macd = ema12 - ema26
-    return macd
+    stoch = ta.momentum.StochasticOscillator(high=data['High'], low=data['Low'], close=data['Close'], window=period)
+    return stoch.stoch(), stoch.stoch_signal()
 
 # Main app
 def main():
@@ -78,54 +58,68 @@ def main():
 
     if analysis_type == "Fundamental Analysis":
         st.header("Fundamental Analysis")
+
+        # Display basic company info
         st.write("### Company Information")
         st.write(f"**Sector:** {company_info['Sector']}")
         st.write(f"**Country:** {company_info['Country']}")
 
+        # Display additional financial metrics
         st.write("### Financial Metrics")
-        metrics = {
-            "P/E Ratio": company_info['PE Ratio'],
-            "P/B Ratio": company_info['PB Ratio'],
-            "EPS": company_info['EPS'],
-            "Revenue": company_info['Revenue'],
-            "Net Income": company_info['Net Income'],
-            "Debt to Equity Ratio": company_info['Debt to Equity'],
-            "Dividend Yield": company_info['Dividend Yield'],
-            "Profit Margin": company_info['Profit Margin'],
-            "Current Ratio": company_info['Current Ratio'],
-            "Quick Ratio": company_info['Quick Ratio'],
-            "ROE": company_info['ROE'],
-        }
-        for key, value in metrics.items():
-            st.write(f"**{key}:** {value if value != 'N/A' else 'Data not available'}")
+        st.write(f"**P/E Ratio:** {company_info['PE Ratio']}")
+        st.write(f"**P/B Ratio:** {company_info['PB Ratio']}")
+        st.write(f"**EPS:** {company_info['EPS']}")
+        st.write(f"**Revenue:** {company_info['Revenue']:,}" if company_info['Revenue'] != "N/A" else "**Revenue:** N/A")
+        st.write(f"**Net Income:** {company_info['Net Income']:,}" if company_info['Net Income'] != "N/A" else "**Net Income:** N/A")
+        st.write(f"**Debt to Equity Ratio:** {company_info['Debt to Equity']}")
+        st.write(f"**Dividend Yield:** {company_info['Dividend Yield']}")
+        st.write(f"**Profit Margin:** {company_info['Profit Margin']}")
+        st.write(f"**Current Ratio:** {company_info['Current Ratio']}")
+        st.write(f"**Quick Ratio:** {company_info['Quick Ratio']}")
+        st.write(f"**ROE:** {company_info['ROE']}")
+
+        # Recommendations
+        st.write("### Recommendation")
+        # ... (existing recommendation logic)
 
     elif analysis_type == "Technical Analysis":
         st.header("Technical Analysis")
+
+        # Calculate indicators
         short_ma_days = st.sidebar.slider("Short-term moving average days:", 10, 100, 10)
         long_ma_days = st.sidebar.slider("Long-term moving average days:", 50, 200, 50)
+        stock_data['SMA_Short'] = stock_data['Close'].rolling(window=short_ma_days).mean()
+        stock_data['SMA_Long'] = stock_data['Close'].rolling(window=long_ma_days).mean()
+        stock_data['RSI'] = ta.momentum.RSIIndicator(close=stock_data['Close'], window=20).rsi()
+        stock_data['MACD'] = ta.trend.MACD(close=stock_data['Close']).macd()
 
-        stock_data['SMA_Short'] = calculate_sma(stock_data, short_ma_days)
-        stock_data['SMA_Long'] = calculate_sma(stock_data, long_ma_days)
-        stock_data['RSI'] = calculate_rsi(stock_data)
-        stock_data['MACD'] = calculate_macd(stock_data)
+        # Calculate Bollinger Bands and Stochastic Oscillator using the new functions
         stock_data['UpperBB'], stock_data['MiddleBB'], stock_data['LowerBB'] = calculate_bollinger_bands(stock_data)
         stock_data['K'], stock_data['D'] = calculate_stochastic_oscillator(stock_data)
 
+        # Plot charts
         st.write("### Price and Moving Averages")
         fig = go.Figure()
-        fig.add_trace(go.Scatter(x=stock_data.index, y=stock_data['Close'], name="Close Price"))
-        fig.add_trace(go.Scatter(x=stock_data.index, y=stock_data['SMA_Short'], name=f"SMA {short_ma_days}"))
-        fig.add_trace(go.Scatter(x=stock_data.index, y=stock_data['SMA_Long'], name=f"SMA {long_ma_days}"))
-        fig.update_layout(title="Price with Moving Averages", template="plotly_dark")
+        fig.add_trace(go.Scatter(x=stock_data.index, y=stock_data['Close'], mode='lines', name="Close Price"))
+        fig.add_trace(go.Scatter(x=stock_data.index, y=stock_data['SMA_Short'], mode='lines', name=f"SMA {short_ma_days}"))
+        fig.add_trace(go.Scatter(x=stock_data.index, y=stock_data['SMA_Long'], mode='lines', name=f"SMA {long_ma_days}"))
+        fig.update_layout(title=f"Close Price with SMA {short_ma_days} and SMA {long_ma_days}", template="plotly_dark")
         st.plotly_chart(fig, use_container_width=True)
 
         st.write("### Bollinger Bands")
         fig_bb = go.Figure()
-        fig_bb.add_trace(go.Scatter(x=stock_data.index, y=stock_data['Close'], name="Close Price"))
-        fig_bb.add_trace(go.Scatter(x=stock_data.index, y=stock_data['UpperBB'], name="Upper Band"))
-        fig_bb.add_trace(go.Scatter(x=stock_data.index, y=stock_data['LowerBB'], name="Lower Band"))
+        fig_bb.add_trace(go.Scatter(x=stock_data.index, y=stock_data['UpperBB'], mode='lines', name="Upper Band"))
+        fig_bb.add_trace(go.Scatter(x=stock_data.index, y=stock_data['MiddleBB'], mode='lines', name="Middle Band"))
+        fig_bb.add_trace(go.Scatter(x=stock_data.index, y=stock_data['LowerBB'], mode='lines', name="Lower Band"))
         fig_bb.update_layout(title="Bollinger Bands", template="plotly_dark")
         st.plotly_chart(fig_bb, use_container_width=True)
+
+        st.write("### Stochastic Oscillator")
+        fig_stoch = go.Figure()
+        fig_stoch.add_trace(go.Scatter(x=stock_data.index, y=stock_data['K'], mode='lines', name="%K"))
+        fig_stoch.add_trace(go.Scatter(x=stock_data.index, y=stock_data['D'], mode='lines', name="%D"))
+        fig_stoch.update_layout(title="Stochastic Oscillator", template="plotly_dark")
+        st.plotly_chart(fig_stoch, use_container_width=True)
 
 if __name__ == "__main__":
     main()
