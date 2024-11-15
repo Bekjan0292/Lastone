@@ -1,61 +1,49 @@
 import streamlit as st
-import os
-
-# Ensure the background image is correctly referenced
-background_path = "background.jpg"
-if not os.path.exists(background_path):
-    st.warning("Background image not found! Please add 'background.jpg' to the app directory.")
 
 # Настройки страницы
 st.set_page_config(
-    page_title="Stock Analysis Dashboard",
+    page_title="Stock Analysis",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Темный фон с локальным изображением и стилизация текста
-st.markdown(f"""
+# Удалены фоновые цвета и картинки
+st.markdown("""
     <style>
-        body {{
+        body {
             margin: 0;
             padding: 0;
-            background-image: url('{background_path}');
-            background-size: cover;
-            background-attachment: fixed;
-            background-position: center;
             font-family: Arial, sans-serif;
             color: white;
-        }}
-        .block-container {{
-            background: rgba(0, 0, 0, 0.6);
+        }
+        .block-container {
             padding: 2rem;
-            border-radius: 10px;
-        }}
-        h1, h2, h3 {{
+        }
+        h1, h2, h3 {
             color: white;
-        }}
-        label, .stRadio label {{
+        }
+        label, .stRadio label {
             color: white;
-        }}
-        .stTextInput>div>label {{
+        }
+        .stTextInput>div>label {
             color: white;
-        }}
-        .stButton>button {{
+        }
+        .stButton>button {
             background-color: #1b1b1b;
             color: white;
             border: none;
             border-radius: 5px;
             padding: 0.5rem 1rem;
             font-size: 1rem;
-        }}
-        .stButton>button:hover {{
+        }
+        .stButton>button:hover {
             background-color: #00c853;
-        }}
+        }
     </style>
 """, unsafe_allow_html=True)
 
 # Заголовок сайта
-st.title("Stock Analysis Dashboard")
+st.title("Stock Analysis")
 
 # Опция выбора компании
 st.subheader("Step 1: Choose a Company")
