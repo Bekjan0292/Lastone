@@ -1,8 +1,7 @@
-streamlit
-yfinance
-pandas
-numpy
-plotly.graph_objs
-wikipediaapi
-sklearn.model_selection
-sklearn.ensemble import
+streamlit==1.24.0
+yfinance==0.2.30
+pandas==2.1.1
+numpy==1.26.0
+plotly==5.17.0
+scikit-learn==1.3.2
+wikipedia-api==0.5.8
