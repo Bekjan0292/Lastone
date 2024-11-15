@@ -7,7 +7,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Темный фон и стиль через CSS
+# Темный фон и стилизация через CSS
 st.markdown("""
     <style>
         body {
@@ -18,12 +18,18 @@ st.markdown("""
             font-family: Arial, sans-serif;
         }
         .block-container {
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.85);
             padding: 2rem;
             border-radius: 10px;
         }
         h1, h2, h3 {
             color: #00c853;
+        }
+        label, .stRadio label {
+            color: #e0e0e0;
+        }
+        .stTextInput>div>label {
+            color: #e0e0e0;
         }
         .stButton>button {
             background-color: #1b1b1b;
@@ -56,15 +62,15 @@ analysis_type = st.radio(
 # Объяснение выбранного анализа
 st.subheader("What is this Analysis?")
 if analysis_type == "Fundamental Analysis":
-    st.write("""
+    st.markdown("""
         **Fundamental Analysis** is a method of evaluating a company's intrinsic value by analyzing related economic, financial, and qualitative and quantitative factors. 
         It looks at revenue, earnings, future growth, return on equity, profit margins, and other data to determine a company’s underlying value and potential for growth.
-    """)
+    """, unsafe_allow_html=True)
 elif analysis_type == "Technical Analysis":
-    st.write("""
+    st.markdown("""
         **Technical Analysis** is a trading discipline that evaluates investments and identifies trading opportunities by analyzing statistical trends gathered from trading activity. 
         It focuses on patterns in price movements, volume, and other charting tools to forecast future price movements.
-    """)
+    """, unsafe_allow_html=True)
 
 # Интерактивная кнопка для перехода к анализу
 if company:
