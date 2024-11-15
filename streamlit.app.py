@@ -11,9 +11,6 @@ This is an interactive portfolio analysis tool that allows you to view and analy
 You can also view price trends, moving averages, and get stock recommendations.
 """)
 
-# Display Logo (make sure you have a logo image in the folder)
-st.image("logo.png", width=200)  # Make sure to add your logo.png in the same directory or specify the correct path
-
 # User Input: Portfolio Ticker Upload or Example
 uploaded_file = st.file_uploader("Upload your Portfolio CSV (with Tickers)", type=["csv"])
 
