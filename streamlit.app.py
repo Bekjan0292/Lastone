@@ -15,46 +15,45 @@ st.sidebar.header("Input Parameters")
 ticker_list = st.sidebar.text_input("Enter ticker symbols (e.g., AAPL, MSFT, TSLA)", value="AAPL, MSFT")
 tickers = [ticker.strip().upper() for ticker in ticker_list.split(",")]
 
-# Data retrieval
-st.sidebar.subheader("Data Retrieval")
-portfolio_data = {}
-for ticker in tickers:
-    try:
-        stock = yf.Ticker(ticker)
-        data = stock.history(period="1y")
-        if not data.empty:
-            portfolio_data[ticker] = data
-        else:
-            st.sidebar.warning(f"No data available for {ticker}.")
-    except Exception as e:
-        st.sidebar.warning(f"Error retrieving data for {ticker}: {e}")
+@st.cache_data
+def fetch_portfolio_data(tickers):
+    """Fetches historical data for the tickers."""
+    return yf.download(" ".join(tickers), period="6mo", group_by='ticker')  # Shorter period for faster load
+
+portfolio_data = fetch_portfolio_data(tickers)
 
 # Portfolio Overview Section
 st.header("Portfolio Overview")
 
-if portfolio_data:
+if not portfolio_data.empty:
     col1, col2, col3 = st.columns(3)
 
     with col1:
-        total_value = sum([df["Close"].iloc[-1] for df in portfolio_data.values()])
+        # Total Value Calculation
+        total_value = sum([portfolio_data[ticker]["Close"].iloc[-1] for ticker in tickers])
         st.metric("💰 Total Value", f"${total_value:,.2f}")
 
     with col2:
-        total_returns = sum([(df["Close"].iloc[-1] - df["Close"].iloc[0]) / df["Close"].iloc[0] * 100
-                             for df in portfolio_data.values() if len(df) > 1])
-        st.metric("📈 Total Returns", f"{total_returns / len(portfolio_data):.2f}%")
+        # Total Returns Calculation
+        total_returns = sum([(portfolio_data[ticker]["Close"].iloc[-1] - portfolio_data[ticker]["Close"].iloc[0]) / portfolio_data[ticker]["Close"].iloc[0] * 100
+                             for ticker in tickers])
+        st.metric("📈 Total Returns", f"{total_returns / len(tickers):.2f}%")
 
+    @st.cache_data
+    def get_dividend_yield(ticker):
+        """Fetches dividend yield for a single ticker."""
+        stock = yf.Ticker(ticker)
+        return stock.info.get("dividendYield", 0)
+
+    avg_dividend_yield = sum(get_dividend_yield(ticker) for ticker in tickers) / len(tickers)
     with col3:
-        avg_dividend_yield = sum([yf.Ticker(ticker).info.get("dividendYield", 0)
-                                  for ticker in portfolio_data.keys()]) / len(portfolio_data)
-        avg_dividend_yield = avg_dividend_yield if avg_dividend_yield else 0
         st.metric("💸 Est. Dividend Yield", f"{avg_dividend_yield:.2f}%")
 
     # Performance Chart
     st.subheader("Performance Over Time")
     performance_fig = go.Figure()
-    for ticker, df in portfolio_data.items():
-        performance_fig.add_trace(go.Scatter(x=df.index, y=df["Close"], mode='lines', name=ticker))
+    for ticker in tickers:
+        performance_fig.add_trace(go.Scatter(x=portfolio_data[ticker].index, y=portfolio_data[ticker]["Close"], mode='lines', name=ticker))
     performance_fig.update_layout(title="Portfolio Performance Over Time", yaxis_title="Stock Price", xaxis_title="Date")
     st.plotly_chart(performance_fig, use_container_width=True)
 
