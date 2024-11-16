@@ -21,10 +21,19 @@ if ticker:
     
     # About the Company - Expandable Section
     with st.expander("About the Company"):
+        # Company Description
         if "longBusinessSummary" in info:
             st.write(info['longBusinessSummary'])
         else:
             st.write("Company information is not available.")
+        
+        # Additional Information
+        st.write(f"**Industry:** {info.get('industry', 'N/A')}")
+        st.write(f"**Country:** {info.get('country', 'N/A')}")
+        if "website" in info:
+            st.markdown(f"[**Website**]({info['website']})", unsafe_allow_html=True)
+        else:
+            st.write("**Website:** N/A")
     
     # Japanese Candlestick Chart
     fig = go.Figure()
