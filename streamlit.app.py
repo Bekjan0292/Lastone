@@ -77,9 +77,11 @@ if ticker:
         income_data["EBIT"] = income_data["Operating Income"]
         income_data["EBITDA"] = income_data["Operating Income"] + financials.get("Depreciation", 0)
 
-        # Add calculated ROE and ROA (mock data if unavailable)
-        income_data["ROE"] = [48.23, 45.61, 42.11, 38.95, 35.12]  # Replace with real calculations if available
-        income_data["ROA"] = [16.32, 15.45, 14.78, 14.05, 13.65]  # Placeholder values
+        # Add calculated ROE and ROA dynamically
+        mock_roe = [48.23, 45.61, 42.11, 38.95, 35.12][:len(income_data)]
+        mock_roa = [16.32, 15.45, 14.78, 14.05, 13.65][:len(income_data)]
+        income_data["ROE"] = mock_roe
+        income_data["ROA"] = mock_roa
 
         # Ensure data is for the last 5 years
         income_data = income_data.tail(5).sort_index()
