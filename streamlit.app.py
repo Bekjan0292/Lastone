@@ -1,6 +1,7 @@
 import streamlit as st
 import yfinance as yf
 import plotly.graph_objects as go
+import pandas as pd
 
 # Page Config
 st.set_page_config(page_title="Stock Fundamental Analysis", layout="wide")
@@ -46,17 +47,34 @@ if ticker:
     )
     st.plotly_chart(fig, use_container_width=True)
     
-    # Key statistics
+    # Key statistics in table format
     st.subheader("Key Statistics")
-    col1, col2 = st.columns(2)
-    with col1:
-        st.write(f"**Previous Close:** {info['previousClose']}")
-        st.write(f"**Open:** {info['open']}")
-        st.write(f"**Day's Range:** {info['dayLow']} - {info['dayHigh']}")
-    with col2:
-        st.write(f"**Beta:** {info['beta']}")
-        st.write(f"**Forward PE:** {info.get('forwardPE', 'N/A')}")
-        st.write(f"**Dividend Yield:** {info.get('dividendYield', 'N/A') * 100:.2f}%")
+    stats_data = {
+        "Metric": [
+            "Current Price", 
+            "Market Cap", 
+            "52W Range", 
+            "Previous Close", 
+            "Open", 
+            "Day's Range", 
+            "Beta", 
+            "Forward PE", 
+            "Dividend Yield"
+        ],
+        "Value": [
+            f"${info['currentPrice']:.2f}",
+            f"${info['marketCap'] / 1e9:.2f}B",
+            f"{info['fiftyTwoWeekLow']} - {info['fiftyTwoWeekHigh']}",
+            f"${info['previousClose']}",
+            f"${info['open']}",
+            f"{info['dayLow']} - {info['dayHigh']}",
+            f"{info['beta']}",
+            f"{info.get('forwardPE', 'N/A')}",
+            f"{info.get('dividendYield', 0) * 100:.2f}%"
+        ]
+    }
+    stats_df = pd.DataFrame(stats_data)
+    st.table(stats_df)
     
     # Financial metrics
     st.subheader("Financial Analysis")
