@@ -2,6 +2,7 @@ import streamlit as st
 import yfinance as yf
 import plotly.graph_objects as go
 import pandas as pd
+import requests
 
 # Page Config
 st.set_page_config(page_title="Stock Fundamental Analysis", layout="wide")
@@ -10,7 +11,11 @@ st.set_page_config(page_title="Stock Fundamental Analysis", layout="wide")
 st.sidebar.title("Stock Analysis")
 ticker = st.sidebar.text_input("Enter Stock Ticker:", value="AAPL")
 
-# Fetch Data
+# Additional ticker input for Profile functionality
+ticker_input = st.text_input("Ticker for Profile Section", "NFLX").upper()
+button_clicked = st.button("Set")
+
+# Fetch Data for Main Section
 if ticker:
     stock = yf.Ticker(ticker)
     info = stock.info
@@ -18,13 +23,6 @@ if ticker:
     
     # Layout
     st.title(f"{info['longName']} ({ticker.upper()})")
-    
-    # Price and summary section
-    st.write(
-        f"**Current Price:** ${info['currentPrice']:.2f}  "
-        f"**Market Cap:** ${info['marketCap'] / 1e9:.2f}B  "
-        f"**52W Range:** {info['fiftyTwoWeekLow']} - {info['fiftyTwoWeekHigh']}"
-    )
     
     # Interactive Plotly chart
     st.subheader("Price History (1 Year)")
@@ -84,5 +82,26 @@ if ticker:
         st.write("Total Assets, Liabilities, etc.")
     with st.expander("Cash Flow"):
         st.write("Operating Cash Flow, etc.")
-else:
-    st.warning("Please enter a valid ticker symbol.")
+
+# Fetch Data for Profile Section
+if button_clicked:
+    try:
+        # Fetch data using Yahoo Finance API
+        request_string = f"https://query1.finance.yahoo.com/v10/finance/quoteSummary/{ticker_input}?modules=assetProfile%2Cprice"
+        request = requests.get(
+            request_string, headers={"USER-AGENT": "Mozilla/5.0"}
+        )
+        json_data = request.json()
+        data = json_data["quoteSummary"]["result"][0]
+
+        # Display the "Profile" section
+        st.header("Profile")
+        st.metric("Sector", data["assetProfile"]["sector"])
+        st.metric("Industry", data["assetProfile"]["industry"])
+        st.metric("Website", data["assetProfile"]["website"])
+        st.metric("Market Cap", data["price"]["marketCap"]["fmt"])
+
+        with st.expander("About Company"):
+            st.write(data["assetProfile"]["longBusinessSummary"])
+    except Exception as e:
+        st.error("Unable to fetch data. Please check the ticker or try again later.")
