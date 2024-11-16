@@ -71,6 +71,8 @@ if ticker:
         
         # Define recommendations
         def get_recommendation(metric, value):
+            if not isinstance(value, (int, float)):  # Handle non-numeric values
+                return "N/A"
             if metric == "P/E":
                 if value < 15:
                     return "Buy"
@@ -110,7 +112,7 @@ if ticker:
         # Prepare data for the table
         recommendation_data = [
             ["P/E Ratio", pe_ratio, "Evaluates the stock's price relative to its earnings.", get_recommendation("P/E", pe_ratio)],
-            ["P/B Ratio", pb_ratio, "Compares the stock's market price to its book value.", get_recommendation("P/B", pb_ratio)],
+            ["P/B Ratio", pb_ratio, "Compares the stock's market price to book value.", get_recommendation("P/B", pb_ratio)],
             ["D/E Ratio", de_ratio, "Measures financial leverage (debt vs equity).", get_recommendation("D/E", de_ratio)],
             ["Free Cash Flow (FCF)", fcf, "Cash generated after capital expenses.", get_recommendation("FCF", fcf)],
             ["PEG Ratio", peg_ratio, "Price/Earnings-to-Growth Ratio.", get_recommendation("PEG", peg_ratio)],
