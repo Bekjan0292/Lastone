@@ -1,3 +1,52 @@
+import streamlit as st
+import yfinance as yf
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+
+# Set up page configuration
+st.set_page_config(
+    page_title="Stock Analyzer",
+    page_icon="📊",
+    layout="wide"
+)
+
+# Caching data using @st.cache_data
+@st.cache_data
+def get_stock_data(ticker):
+    stock = yf.Ticker(ticker)
+    return stock.info, stock.financials.T, stock.history(period="5y")
+
+# Initialize session_state for ticker and current page
+if "ticker" not in st.session_state:
+    st.session_state["ticker"] = ""
+if "page" not in st.session_state:
+    st.session_state["page"] = "Main"
+if "stock_data" not in st.session_state:
+    st.session_state["stock_data"] = None
+
+# Main Page
+def main_page():
+    st.title("Stock Analyzer")
+    st.write("Welcome! Analyze stocks both fundamentally and technically.")
+
+    # Input field for stock ticker
+    ticker = st.text_input("Enter Stock Ticker (e.g., AAPL, TSLA):", value=st.session_state["ticker"])
+    st.session_state["ticker"] = ticker
+
+    # Buttons for navigation
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("Go to Fundamental Analysis") and ticker:
+            # Load and store data in session_state
+            st.session_state["stock_data"] = get_stock_data(ticker)
+            st.session_state["page"] = "Fundamental"
+    with col2:
+        if st.button("Go to Technical Analysis") and ticker:
+            st.session_state["stock_data"] = get_stock_data(ticker)
+            st.session_state["page"] = "Technical"
+
+# Fundamental Analysis Page
 def fundamental_analysis_page():
     st.title("Fundamental Analysis")
 
@@ -77,4 +126,20 @@ def fundamental_analysis_page():
     # Back button
     if st.button("Back to Main Page"):
         st.session_state["page"] = "Main"
-    
+
+# Technical Analysis Page (Placeholder)
+def technical_analysis_page():
+    st.title("Technical Analysis")
+    st.write("Technical analysis functionality will be implemented here.")
+
+    # Back button
+    if st.button("Back to Main Page"):
+        st.session_state["page"] = "Main"
+
+# Navigation between pages
+if st.session_state["page"] == "Main":
+    main_page()
+elif st.session_state["page"] == "Fundamental":
+    fundamental_analysis_page()
+elif st.session_state["page"] == "Technical":
+    technical_analysis_page()
