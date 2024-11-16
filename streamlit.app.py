@@ -4,20 +4,20 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 
-# Установить параметры страницы
+# Set up page configuration
 st.set_page_config(
     page_title="Stock Analyzer",
     page_icon="📊",
     layout="wide"
 )
 
-# Кеширование данных с помощью @st.cache_data
+# Caching data using @st.cache_data
 @st.cache_data
 def get_stock_data(ticker):
     stock = yf.Ticker(ticker)
     return stock.info, stock.financials.T, stock.history(period="5y")
 
-# Инициализация session_state для тикера и текущей страницы
+# Initialize session_state for ticker and current page
 if "ticker" not in st.session_state:
     st.session_state["ticker"] = ""
 if "page" not in st.session_state:
@@ -25,116 +25,115 @@ if "page" not in st.session_state:
 if "stock_data" not in st.session_state:
     st.session_state["stock_data"] = None
 
-# Главная страница
+# Main Page
 def main_page():
     st.title("Stock Analyzer")
-    st.write("Добро пожаловать! Здесь вы можете анализировать акции как фундаментально, так и технически.")
+    st.write("Welcome! Analyze stocks both fundamentally and technically.")
 
-    # Поле для ввода тикера
-    ticker = st.text_input("Введите тикер акции (например, AAPL, TSLA):", value=st.session_state["ticker"])
+    # Input field for stock ticker
+    ticker = st.text_input("Enter Stock Ticker (e.g., AAPL, TSLA):", value=st.session_state["ticker"])
     st.session_state["ticker"] = ticker
 
-    # Кнопки для перехода
+    # Buttons for navigation
     col1, col2 = st.columns(2)
     with col1:
-        if st.button("Перейти к фундаментальному анализу") and ticker:
-            # Загружаем и сохраняем данные в session_state
+        if st.button("Go to Fundamental Analysis") and ticker:
+            # Load and store data in session_state
             st.session_state["stock_data"] = get_stock_data(ticker)
             st.session_state["page"] = "Fundamental"
     with col2:
-        if st.button("Перейти к техническому анализу") and ticker:
+        if st.button("Go to Technical Analysis") and ticker:
             st.session_state["stock_data"] = get_stock_data(ticker)
             st.session_state["page"] = "Technical"
 
-# Страница фундаментального анализа
+# Fundamental Analysis Page
 def fundamental_analysis_page():
-    st.title("Фундаментальный анализ")
+    st.title("Fundamental Analysis")
 
-    # Проверка наличия данных
+    # Check if data exists
     if not st.session_state["stock_data"]:
-        st.warning("Пожалуйста, вернитесь на главную страницу и введите тикер.")
+        st.warning("Please go back to the main page and enter a stock ticker.")
         return
 
-    # Получение данных из session_state
+    # Retrieve data from session_state
     info, financials, history = st.session_state["stock_data"]
 
-    # Информация о компании
-    st.subheader(f"Компания: {info.get('longName', 'Неизвестно')} ({st.session_state['ticker']})")
-    st.write(f"**Сектор:** {info.get('sector', 'N/A')} | **Отрасль:** {info.get('industry', 'N/A')}")
+    # Company Information
+    st.subheader(f"Company: {info.get('longName', 'Unknown')} ({st.session_state['ticker']})")
+    st.write(f"**Sector:** {info.get('sector', 'N/A')} | **Industry:** {info.get('industry', 'N/A')}")
 
-    # Ключевые метрики
-    st.subheader("Ключевые финансовые метрики")
+    # Key Metrics
+    st.subheader("Key Financial Metrics")
     metrics = {
-        "Рыночная капитализация": f"${info.get('marketCap', 0):,}",
-        "P/E (TTM)": info.get('forwardPE', 'N/A'),
-        "Дивидендная доходность": f"{info.get('dividendYield', 0) * 100:.2f}%",
-        "52-недельный максимум": f"${info.get('fiftyTwoWeekHigh', 'N/A')}",
-        "52-недельный минимум": f"${info.get('fiftyTwoWeekLow', 'N/A')}"
+        "Market Cap": f"${info.get('marketCap', 0):,}",
+        "P/E Ratio (TTM)": info.get('forwardPE', 'N/A'),
+        "Dividend Yield": f"{info.get('dividendYield', 0) * 100:.2f}%",
+        "52-Week High": f"${info.get('fiftyTwoWeekHigh', 'N/A')}",
+        "52-Week Low": f"${info.get('fiftyTwoWeekLow', 'N/A')}"
     }
-    metrics_df = pd.DataFrame(metrics.items(), columns=["Метрика", "Значение"])
+    metrics_df = pd.DataFrame(metrics.items(), columns=["Metric", "Value"])
 
-    # Устранение ошибок Arrow, конвертация в строки
-    metrics_df["Значение"] = metrics_df["Значение"].astype(str)
+    # Fix Arrow serialization issue by converting to strings
+    metrics_df["Value"] = metrics_df["Value"].astype(str)
     st.table(metrics_df)
 
-    # График "Выручка и чистая прибыль"
-    st.subheader("Выручка и чистая прибыль (интерактивный график)")
+    # Revenue and Net Income Chart
+    st.subheader("Revenue and Net Income (Interactive)")
     try:
-        financials = financials.rename(columns={"Total Revenue": "Выручка", "Net Income": "Чистая прибыль"})
-        financials_chart = financials[["Выручка", "Чистая прибыль"]].reset_index()
-        financials_chart = financials_chart.melt(id_vars="index", var_name="Метрика", value_name="Сумма")
+        financials = financials.rename(columns={"Total Revenue": "Revenue", "Net Income": "Net Income"})
+        financials_chart = financials[["Revenue", "Net Income"]].reset_index()
+        financials_chart = financials_chart.melt(id_vars="index", var_name="Metric", value_name="Amount")
         fig = px.line(
             financials_chart,
             x="index",
-            y="Сумма",
-            color="Метрика",
-            title="Тренды выручки и чистой прибыли",
-            labels={"index": "Год", "Сумма": "Сумма (USD)"}
+            y="Amount",
+            color="Metric",
+            title="Revenue and Net Income Trends",
+            labels={"index": "Year", "Amount": "Amount (USD)"}
         )
         st.plotly_chart(fig)
     except Exception:
-        st.warning("Не удалось загрузить данные по выручке и прибыли.")
+        st.warning("Unable to load financial data.")
 
-    # Рекомендация
-    st.subheader("Рекомендация")
-    recommendation = "Держать"
+    # Recommendation
+    st.subheader("Recommendation")
+    recommendation = "Hold"
     pe = info.get("forwardPE", None)
     if pe:
         if pe < 15:
-            recommendation = "Покупать"
+            recommendation = "Buy"
         elif pe > 25:
-            recommendation = "Продавать"
+            recommendation = "Sell"
 
-    # График-индикатор
+    # Gauge Chart for Recommendation
     fig = go.Figure(go.Indicator(
         mode="gauge+number",
         value=pe if pe else 20,
         title={"text": f"P/E Ratio ({recommendation})"},
         gauge={
             "axis": {"range": [0, 40]},
-            "bar": {"color": "green" if recommendation == "Покупать" else "red" if recommendation == "Продавать" else "yellow"}
+            "bar": {"color": "green" if recommendation == "Buy" else "red" if recommendation == "Sell" else "yellow"}
         }
     ))
     st.plotly_chart(fig)
 
-    # Кнопка "Назад"
-    if st.button("Назад на главную страницу"):
+    # Back button
+    if st.button("Back to Main Page"):
         st.session_state["page"] = "Main"
 
-# Страница технического анализа (плейсхолдер)
+# Technical Analysis Page (Placeholder)
 def technical_analysis_page():
-    st.title("Технический анализ")
-    st.write("Здесь будет реализован технический анализ.")
+    st.title("Technical Analysis")
+    st.write("Technical analysis functionality will be implemented here.")
 
-    # Кнопка "Назад"
-    if st.button("Назад на главную страницу"):
+    # Back button
+    if st.button("Back to Main Page"):
         st.session_state["page"] = "Main"
 
-# Навигация между страницами
+# Navigation between pages
 if st.session_state["page"] == "Main":
     main_page()
 elif st.session_state["page"] == "Fundamental":
     fundamental_analysis_page()
 elif st.session_state["page"] == "Technical":
     technical_analysis_page()
-    
