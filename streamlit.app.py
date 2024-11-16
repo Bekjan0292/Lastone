@@ -57,11 +57,11 @@ if ticker:
     
     # Income Statement Section
     if st.button("View Income Statement"):
-        st.subheader("Income Statement (Last 5 Years, in Millions USD)")
+        st.subheader("Income Statement (Last 4 Years, in Millions USD)")
         financials = stock.financials.T
         financials.index = pd.to_datetime(financials.index).year
         financials = financials[financials.index != 2019]  # Remove 2019
-        financials = financials.sort_index(ascending=False)  # Sort from new to old
+        financials = financials.sort_index(ascending=False).head(4)  # Sort from new to old, keep 4 most recent years
         income_data = financials[
             ["Total Revenue", "Cost Of Revenue", "Gross Profit", "Operating Income", "Pretax Income", "Net Income"]
         ].copy()
@@ -106,7 +106,7 @@ if ticker:
             )
         )
         fig.update_layout(
-            title="Income Statement Metrics (Last 5 Years)",
+            title="Income Statement Metrics (Last 4 Years)",
             xaxis=dict(title="Year"),
             yaxis=dict(title="Amount (in millions USD)"),
             barmode="group",
@@ -116,11 +116,11 @@ if ticker:
     
     # Balance Sheet Section
     if st.button("View Balance Sheet"):
-        st.subheader("Balance Sheet (Last 5 Years, in Millions USD)")
+        st.subheader("Balance Sheet (Last 4 Years, in Millions USD)")
         balance_sheet = stock.balance_sheet.T
         balance_sheet.index = pd.to_datetime(balance_sheet.index).year
         balance_sheet = balance_sheet[balance_sheet.index != 2019]  # Remove 2019
-        balance_sheet = balance_sheet.sort_index(ascending=False)  # Sort from new to old
+        balance_sheet = balance_sheet.sort_index(ascending=False).head(4)  # Sort from new to old, keep 4 most recent years
         balance_data = balance_sheet[
             ["Total Assets", "Total Liabilities Net Minority Interest", "Total Equity Gross Minority Interest"]
         ].copy()
@@ -163,7 +163,7 @@ if ticker:
             )
         )
         fig.update_layout(
-            title="Balance Sheet Metrics (Last 5 Years)",
+            title="Balance Sheet Metrics (Last 4 Years)",
             xaxis=dict(title="Year"),
             yaxis=dict(title="Amount (in millions USD)"),
             barmode="group",
