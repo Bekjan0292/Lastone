@@ -58,16 +58,16 @@ if ticker:
     # Key statistics in compact table format
     st.subheader("Key Statistics")
     stats_data = [
-        ["Current Price", f"${info['currentPrice']:.2f}", "Market Cap", f"${info['marketCap'] / 1e9:.2f}B"],
-        ["52W Range", f"{info['fiftyTwoWeekLow']} - {info['fiftyTwoWeekHigh']}", "Previous Close", f"${info['previousClose']}"],
-        ["Open", f"${info['open']}", "Day's Range", f"{info['dayLow']} - {info['dayHigh']}"],
-        ["Beta", f"{info['beta']}", "Forward PE", f"{info.get('forwardPE', 'N/A')}"],
-        ["Dividend Yield", f"{info.get('dividendYield', 0) * 100:.2f}%", "", ""]
+        [f"*Current Price*", f"${info['currentPrice']:.2f}", f"*Market Cap*", f"${info['marketCap'] / 1e9:.2f}B"],
+        [f"*52W Range*", f"{info['fiftyTwoWeekLow']} - {info['fiftyTwoWeekHigh']}", f"*Previous Close*", f"${info['previousClose']}"],
+        [f"*Open*", f"${info['open']}", f"*Day's Range*", f"{info['dayLow']} - {info['dayHigh']}"],
+        [f"*Beta*", f"{info['beta']}", f"*Forward PE*", f"{info.get('forwardPE', 'N/A')}"],
+        [f"*Dividend Yield*", f"{info.get('dividendYield', 0) * 100:.2f}%", "", ""]
     ]
     
-    # Create a DataFrame for better display
-    stats_df = pd.DataFrame(stats_data, columns=["Metric 1", "Value 1", "Metric 2", "Value 2"])
-    st.table(stats_df)
+    # Create a DataFrame without headers
+    stats_df = pd.DataFrame(stats_data)
+    st.table(stats_df.style.hide(axis='columns'))
     
     # Financial metrics
     st.subheader("Financial Analysis")
