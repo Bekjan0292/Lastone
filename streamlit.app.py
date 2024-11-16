@@ -57,29 +57,38 @@ if ticker:
     
     # Income Statement Section
     with st.expander("View Income Statement"):
-        # Mock data for Income Statement
-        # Replace this mock data with actual financials from yfinance or another API
-        income_data = {
-            "Year": ["2022", "2021", "2020"],
-            "Total Revenue": [394.33, 365.82, 274.51],
-            "COGS": [233.79, 219.32, 169.56],
-            "Gross Profit": [160.54, 146.50, 104.95],
-            "Operating Income": [119.34, 108.85, 66.29],
-            "Pretax Income": [112.53, 100.56, 62.44],
-            "Net Income": [95.11, 84.95, 57.41],
-            "EBIT": [119.34, 108.85, 66.29],
-            "EBITDA": [125.76, 114.65, 70.12],
-            "ROE": [48.23, 45.61, 42.11]
-        }
-        income_df = pd.DataFrame(income_data)
-        income_df.set_index("Year", inplace=True)
+        # Fetch financial data
+        financials = stock.financials.T
+        financials.index = pd.to_datetime(financials.index).year  # Convert to year format
+        
+        # Select relevant metrics and prepare data
+        income_data = financials[
+            ["Total Revenue", "Cost Of Revenue", "Gross Profit", "Operating Income",
+             "Pretax Income", "Net Income"]
+        ].copy()
+        income_data.rename(columns={
+            "Total Revenue": "Total Revenue",
+            "Cost Of Revenue": "COGS",
+            "Gross Profit": "Gross Profit",
+            "Operating Income": "Operating Income",
+            "Pretax Income": "Pretax Income",
+            "Net Income": "Net Income"
+        }, inplace=True)
+        income_data["EBIT"] = income_data["Operating Income"]
+        income_data["EBITDA"] = income_data["Operating Income"] + financials.get("Depreciation", 0)
+        
+        # Ensure data is for the last 5 years
+        income_data = income_data.tail(5).sort_index()
 
-        # Plot Net Income, Total Revenue, and ROE
+        # Add mock ROE data (replace with real calculation if available)
+        income_data["ROE"] = [48.23, 45.61, 42.11, 38.95, 35.12]  # Placeholder values
+
+        # Graph for Net Income, Total Revenue, and ROE
         fig = go.Figure()
         fig.add_trace(
             go.Bar(
-                x=income_df.index,
-                y=income_df["Net Income"],
+                x=income_data.index,
+                y=income_data["Net Income"] / 1e9,  # Convert to billions
                 name="Net Income",
                 marker=dict(color="blue"),
                 yaxis="y1"
@@ -87,8 +96,8 @@ if ticker:
         )
         fig.add_trace(
             go.Bar(
-                x=income_df.index,
-                y=income_df["Total Revenue"],
+                x=income_data.index,
+                y=income_data["Total Revenue"] / 1e9,  # Convert to billions
                 name="Total Revenue",
                 marker=dict(color="green"),
                 yaxis="y1"
@@ -96,8 +105,8 @@ if ticker:
         )
         fig.add_trace(
             go.Scatter(
-                x=income_df.index,
-                y=income_df["ROE"],
+                x=income_data.index,
+                y=income_data["ROE"],
                 name="ROE (%)",
                 line=dict(color="red", width=2),
                 yaxis="y2"
@@ -106,7 +115,7 @@ if ticker:
 
         # Configure the layout
         fig.update_layout(
-            title="Income Statement Metrics",
+            title="Income Statement Metrics (5 Years)",
             xaxis=dict(title="Year"),
             yaxis=dict(title="Amount (in billions USD)", side="left"),
             yaxis2=dict(
@@ -121,9 +130,10 @@ if ticker:
         )
         st.plotly_chart(fig)
 
-        # Display Table
+        # Transpose table: Switch rows and columns
         st.subheader("Detailed Income Statement")
-        st.table(income_df)
+        income_table = income_data.T
+        st.table(income_table)
 
 else:
     st.warning("Please enter a valid ticker symbol.")
