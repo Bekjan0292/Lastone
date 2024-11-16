@@ -1,5 +1,6 @@
 import streamlit as st
 import yfinance as yf
+import plotly.graph_objects as go
 
 # Page Config
 st.set_page_config(page_title="Stock Fundamental Analysis", layout="wide")
@@ -12,6 +13,7 @@ ticker = st.sidebar.text_input("Enter Stock Ticker:", value="AAPL")
 if ticker:
     stock = yf.Ticker(ticker)
     info = stock.info
+    historical = stock.history(period="1y")
     
     # Layout
     st.title(f"{info['longName']} ({ticker.upper()})")
@@ -23,8 +25,26 @@ if ticker:
         f"**52W Range:** {info['fiftyTwoWeekLow']} - {info['fiftyTwoWeekHigh']}"
     )
     
-    # Line chart
-    st.line_chart(stock.history(period="1y")['Close'])
+    # Interactive Plotly chart
+    st.subheader("Price History (1 Year)")
+    fig = go.Figure()
+    fig.add_trace(
+        go.Scatter(
+            x=historical.index, 
+            y=historical['Close'], 
+            mode='lines',
+            name='Close Price',
+            line=dict(color='blue')
+        )
+    )
+    fig.update_layout(
+        title="Interactive Price Chart",
+        xaxis_title="Date",
+        yaxis_title="Price (USD)",
+        template="plotly_white",
+        hovermode="x"
+    )
+    st.plotly_chart(fig, use_container_width=True)
     
     # Key statistics
     st.subheader("Key Statistics")
@@ -40,6 +60,11 @@ if ticker:
     
     # Financial metrics
     st.subheader("Financial Analysis")
-    st.write("Income Statement, Balance Sheet, and Cash Flow data can be displayed here.")
+    with st.expander("Income Statement"):
+        st.write("Revenue, Net Income, etc.")
+    with st.expander("Balance Sheet"):
+        st.write("Total Assets, Liabilities, etc.")
+    with st.expander("Cash Flow"):
+        st.write("Operating Cash Flow, etc.")
 else:
     st.warning("Please enter a valid ticker symbol.")
