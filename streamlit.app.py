@@ -217,5 +217,11 @@ if ticker:
         ["Free Cash Flow (FCF)", fcf_text, "Cash generated after capital expenses.", get_recommendation("FCF", fcf)],
     ]
 
-    # Create a DataFrame
-    recommendation_df = pd.DataFrame(recommendation_data, columns=["Metric", "Current Value", "Explanation
+ # Create a DataFrame
+    recommendation_df = pd.DataFrame(recommendation_data, columns=["Metric", "Current Value", "Explanation", "Recommendation"])
+    
+    # Display the Recommendation Table
+    st.table(recommendation_df)
+
+else:
+    st.warning("Please enter a valid ticker symbol.")
