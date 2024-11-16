@@ -59,9 +59,23 @@ if ticker:
     if st.button("View Income Statement"):
         st.subheader("Income Statement (Last 4 Years, in Millions USD)")
         financials = stock.financials.T
+        balance_sheet = stock.balance_sheet.T
+
+        # Convert index to years and sort
         financials.index = pd.to_datetime(financials.index).year
-        financials = financials[financials.index != 2019]  # Remove 2019
-        financials = financials.sort_index(ascending=False).head(4)  # Sort from new to old, keep 4 most recent years
+        balance_sheet.index = pd.to_datetime(balance_sheet.index).year
+        financials = financials[financials.index != 2019].sort_index(ascending=False).head(4)  # Exclude 2019
+        balance_sheet = balance_sheet[balance_sheet.index != 2019].sort_index(ascending=False).head(4)  # Exclude 2019
+        
+        # Extract required metrics
+        total_assets = balance_sheet["Total Assets"]
+        total_equity = balance_sheet["Total Equity Gross Minority Interest"]
+        net_income = financials["Net Income"]
+
+        # Calculate ROA and ROE
+        roa = (net_income / total_assets * 100).round(2)
+        roe = (net_income / total_equity * 100).round(2)
+
         income_data = financials[
             ["Total Revenue", "Cost Of Revenue", "Gross Profit", "Operating Income", "Pretax Income", "Net Income"]
         ].copy()
@@ -73,17 +87,21 @@ if ticker:
             "Pretax Income": "Pretax Income",
             "Net Income": "Net Income"
         }, inplace=True)
-        income_data["EBIT"] = income_data["Operating Income"]
-        income_data["EBITDA"] = income_data["Operating Income"] + financials.get("Depreciation", 0)
-        for col in ["Total Revenue", "COGS", "Gross Profit", "Operating Income", "Pretax Income", "Net Income", "EBIT", "EBITDA"]:
+        income_data["ROA (%)"] = roa
+        income_data["ROE (%)"] = roe
+
+        for col in ["Total Revenue", "COGS", "Gross Profit", "Operating Income", "Pretax Income", "Net Income"]:
             income_data[col] = income_data[col].div(1e6).round(2)
+        
         income_table = income_data.T
         income_table = income_table.applymap(lambda x: f"{x:,.2f}" if isinstance(x, (float, int)) else x)
         st.table(income_table)
+        
+        # Income Statement Graph
         fig = go.Figure()
         fig.add_trace(
             go.Bar(
-                x=income_data.index,
+                x=income_data.index.astype(str),
                 y=income_data["Total Revenue"],
                 name="Total Revenue",
                 marker=dict(color="indigo")
@@ -91,7 +109,7 @@ if ticker:
         )
         fig.add_trace(
             go.Bar(
-                x=income_data.index,
+                x=income_data.index.astype(str),
                 y=income_data["Net Income"],
                 name="Net Income",
                 marker=dict(color="orange")
@@ -99,15 +117,15 @@ if ticker:
         )
         fig.add_trace(
             go.Scatter(
-                x=income_data.index,
-                y=income_data["EBITDA"],
-                name="EBITDA",
+                x=income_data.index.astype(str),
+                y=income_data["ROE (%)"],
+                name="ROE (%)",
                 line=dict(color="teal", width=3)
             )
         )
         fig.update_layout(
             title="Income Statement Metrics (Last 4 Years)",
-            xaxis=dict(title="Year"),
+            xaxis=dict(title="Year", type="category"),  # Ensure years are categorical
             yaxis=dict(title="Amount (in millions USD)"),
             barmode="group",
             template="plotly_white"
@@ -117,10 +135,7 @@ if ticker:
     # Balance Sheet Section
     if st.button("View Balance Sheet"):
         st.subheader("Balance Sheet (Last 4 Years, in Millions USD)")
-        balance_sheet = stock.balance_sheet.T
-        balance_sheet.index = pd.to_datetime(balance_sheet.index).year
-        balance_sheet = balance_sheet[balance_sheet.index != 2019]  # Remove 2019
-        balance_sheet = balance_sheet.sort_index(ascending=False).head(4)  # Sort from new to old, keep 4 most recent years
+        balance_sheet = balance_sheet.sort_index(ascending=False).head(4)  # Already filtered for last 4 years
         balance_data = balance_sheet[
             ["Total Assets", "Total Liabilities Net Minority Interest", "Total Equity Gross Minority Interest"]
         ].copy()
@@ -140,7 +155,7 @@ if ticker:
         fig = go.Figure()
         fig.add_trace(
             go.Bar(
-                x=balance_data.index,
+                x=balance_data.index.astype(str),
                 y=balance_data["Total Assets"],
                 name="Total Assets",
                 marker=dict(color="purple")
@@ -148,7 +163,7 @@ if ticker:
         )
         fig.add_trace(
             go.Bar(
-                x=balance_data.index,
+                x=balance_data.index.astype(str),
                 y=balance_data["Total Liabilities"],
                 name="Total Liabilities",
                 marker=dict(color="red")
@@ -156,7 +171,7 @@ if ticker:
         )
         fig.add_trace(
             go.Bar(
-                x=balance_data.index,
+                x=balance_data.index.astype(str),
                 y=balance_data["Total Equity"],
                 name="Total Equity",
                 marker=dict(color="green")
@@ -164,7 +179,7 @@ if ticker:
         )
         fig.update_layout(
             title="Balance Sheet Metrics (Last 4 Years)",
-            xaxis=dict(title="Year"),
+            xaxis=dict(title="Year", type="category"),
             yaxis=dict(title="Amount (in millions USD)"),
             barmode="group",
             template="plotly_white"
@@ -212,6 +227,8 @@ if ticker:
             else:
                 return "Sell"
         else:
+            return "N"
+                    else:
             return "N/A"
 
     # Prepare data for the table
