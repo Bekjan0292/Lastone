@@ -103,60 +103,7 @@ if ticker:
             )
         )
         fig.update_layout(
-            title="Balance Sheet Metrics (5 Years)",
-            xaxis=dict(title="Year"),
-            yaxis=dict(title="Amount (in millions USD)"),
-            barmode="group",
-            template="plotly_white"
-        )
-        st.plotly_chart(fig)
-    
-    # Cash Flow Section
-    with st.expander("View Cash Flow Statement"):
-        cash_flow = stock.cashflow.T
-        cash_flow.index = pd.to_datetime(cash_flow.index).year
-        cash_flow_data = cash_flow[
-            ["Total Cash From Operating Activities", "Total Cashflows From Investing Activities", "Total Cash From Financing Activities"]
-        ].copy()
-        cash_flow_data.rename(columns={
-            "Total Cash From Operating Activities": "Operating Cash Flow",
-            "Total Cashflows From Investing Activities": "Investing Cash Flow",
-            "Total Cash From Financing Activities": "Financing Cash Flow"
-        }, inplace=True)
-        cash_flow_data = cash_flow_data.tail(5).sort_index()
-        for col in ["Operating Cash Flow", "Investing Cash Flow", "Financing Cash Flow"]:
-            cash_flow_data[col] = cash_flow_data[col].div(1e6).round(2)
-        cash_flow_table = cash_flow_data.T
-        cash_flow_table = cash_flow_table.applymap(lambda x: f"{x:,.2f}" if isinstance(x, (float, int)) else x)
-        st.subheader("Cash Flow Statement (Last 5 Years, in Millions USD)")
-        st.table(cash_flow_table)
-        fig = go.Figure()
-        fig.add_trace(
-            go.Bar(
-                x=cash_flow_data.index,
-                y=cash_flow_data["Operating Cash Flow"],
-                name="Operating Cash Flow",
-                marker=dict(color="blue")
-            )
-        )
-        fig.add_trace(
-            go.Bar(
-                x=cash_flow_data.index,
-                y=cash_flow_data["Investing Cash Flow"],
-                name="Investing Cash Flow",
-                marker=dict(color="red")
-            )
-        )
-        fig.add_trace(
-            go.Bar(
-                x=cash_flow_data.index,
-                y=cash_flow_data["Financing Cash Flow"],
-                name="Financing Cash Flow",
-                marker=dict(color="green")
-            )
-        )
-        fig.update_layout(
-            title="Cash Flow Statement Metrics (5 Years)",
+            title="Balance Sheet Metrics (Last 5 Years)",
             xaxis=dict(title="Year"),
             yaxis=dict(title="Amount (in millions USD)"),
             barmode="group",
