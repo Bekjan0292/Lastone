@@ -55,47 +55,25 @@ if ticker:
     )
     st.plotly_chart(fig, use_container_width=True)
     
-    # Key statistics in compact table format with tooltips
+    # Key statistics with explanations
     st.subheader("Key Statistics")
     stats_data = [
-        [
-            f'<span title="The current trading price of the stock.">Current Price</span>',
-            f"${info['currentPrice']:.2f}",
-            f'<span title="The total value of the company based on its stock price and shares outstanding.">Market Cap</span>',
-            f"${info['marketCap'] / 1e9:,.2f}B"
-        ],
-        [
-            f'<span title="The range of the stock price over the last 52 weeks.">52W Range</span>',
-            f"{info['fiftyTwoWeekLow']:.2f} - {info['fiftyTwoWeekHigh']:.2f}",
-            f'<span title="The last recorded closing price of the stock.">Previous Close</span>',
-            f"${info['previousClose']:.2f}"
-        ],
-        [
-            f'<span title="The stock price at the start of the trading session.">Open</span>',
-            f"${info['open']:.2f}",
-            f'<span title="The lowest and highest price during today\'s trading session.">Day\'s Range</span>',
-            f"{info['dayLow']:.2f} - {info['dayHigh']:.2f}"
-        ],
-        [
-            f'<span title="A measure of the stock\'s volatility compared to the overall market.">Beta</span>',
-            f"{info['beta']:.2f}",
-            f'<span title="The price-to-earnings ratio, showing the price relative to earnings per share.">P/E Ratio</span>',
-            f"{info.get('trailingPE', 'N/A'):.2f}" if info.get('trailingPE') else "N/A"
-        ],
-        [
-            f'<span title="The price-to-book ratio, showing the price relative to book value per share.">P/B Ratio</span>',
-            f"{info.get('priceToBook', 'N/A'):.2f}" if info.get('priceToBook') else "N/A",
-            f'<span title="Earnings per share, showing profit allocated to each outstanding share.">EPS</span>',
-            f"{info.get('trailingEps', 'N/A'):.2f}" if info.get('trailingEps') else "N/A"
-        ]
+        ["Current Price", f"${info['currentPrice']:.2f}", "The current trading price of the stock."],
+        ["Market Cap", f"${info['marketCap'] / 1e9:,.2f}B", "The total value of the company based on its stock price and shares outstanding."],
+        ["52W Range", f"{info['fiftyTwoWeekLow']:.2f} - {info['fiftyTwoWeekHigh']:.2f}", "The range of the stock price over the last 52 weeks."],
+        ["Previous Close", f"${info['previousClose']:.2f}", "The last recorded closing price of the stock."],
+        ["Open", f"${info['open']:.2f}", "The stock price at the start of the trading session."],
+        ["Day's Range", f"{info['dayLow']:.2f} - {info['dayHigh']:.2f}", "The lowest and highest price during today's trading session."],
+        ["Beta", f"{info['beta']:.2f}", "A measure of the stock's volatility compared to the overall market."],
+        ["P/E Ratio", f"{info.get('trailingPE', 'N/A'):.2f}" if info.get('trailingPE') else "N/A", "The price-to-earnings ratio, showing the price relative to earnings per share."],
+        ["P/B Ratio", f"{info.get('priceToBook', 'N/A'):.2f}" if info.get('priceToBook') else "N/A", "The price-to-book ratio, showing the price relative to book value per share."],
+        ["EPS", f"{info.get('trailingEps', 'N/A'):.2f}" if info.get('trailingEps') else "N/A", "Earnings per share, showing profit allocated to each outstanding share."]
     ]
     
-    # Convert the data into a DataFrame with HTML tooltips
-    stats_df = pd.DataFrame(stats_data, columns=["Metric 1", "Value 1", "Metric 2", "Value 2"])
-    
-    # Render the table with tooltips
+    # Create a DataFrame without row numeration
+    stats_df = pd.DataFrame(stats_data, columns=["Metric", "Value", "Explanation"])
     st.markdown(
-        stats_df.to_html(escape=False, index=False, border=0),
+        stats_df.to_html(index=False, escape=False),  # index=False removes row numeration
         unsafe_allow_html=True
     )
     
