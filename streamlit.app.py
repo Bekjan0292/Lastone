@@ -19,6 +19,10 @@ if ticker:
     # Layout
     st.title(f"{info['longName']} ({ticker.upper()})")
     
+    # Short Company Info
+    if "longBusinessSummary" in info:
+        st.write(f"**About the Company:** {info['longBusinessSummary']}")
+    
     # Japanese Candlestick Chart
     fig = go.Figure()
     fig.add_trace(
