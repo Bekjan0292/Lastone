@@ -58,16 +58,20 @@ if ticker:
     # Key statistics in compact table format
     st.subheader("Key Statistics")
     stats_data = [
-        [f"*Current Price*", f"${info['currentPrice']:.2f}", f"*Market Cap*", f"${info['marketCap'] / 1e9:.2f}B"],
-        [f"*52W Range*", f"{info['fiftyTwoWeekLow']} - {info['fiftyTwoWeekHigh']}", f"*Previous Close*", f"${info['previousClose']}"],
-        [f"*Open*", f"${info['open']}", f"*Day's Range*", f"{info['dayLow']} - {info['dayHigh']}"],
-        [f"*Beta*", f"{info['beta']}", f"*Forward PE*", f"{info.get('forwardPE', 'N/A')}"],
-        [f"*Dividend Yield*", f"{info.get('dividendYield', 0) * 100:.2f}%", "", ""]
+        [f"**Current Price**", f"${info['currentPrice']:.2f}", f"**Market Cap**", f"${info['marketCap'] / 1e9:.2f}B"],
+        [f"**52W Range**", f"{info['fiftyTwoWeekLow']} - {info['fiftyTwoWeekHigh']}", f"**Previous Close**", f"${info['previousClose']}"],
+        [f"**Open**", f"${info['open']}", f"**Day's Range**", f"{info['dayLow']} - {info['dayHigh']}"],
+        [f"**Beta**", f"{info['beta']}", f"**Forward PE**", f"{info.get('forwardPE', 'N/A')}"],
+        [f"**Dividend Yield**", f"{info.get('dividendYield', 0) * 100:.2f}%", "", ""]
     ]
     
-    # Create a DataFrame without headers
-    stats_df = pd.DataFrame(stats_data)
-    st.table(stats_df.style.hide(axis='columns'))
+    # Create a DataFrame without headers and apply style for inner borders
+    stats_df = pd.DataFrame(stats_data, columns=["", "", "", ""])
+    styled_df = stats_df.style.set_table_styles(
+        [{"selector": "table", "props": [("border-collapse", "collapse"), ("border", "none")]},
+         {"selector": "td", "props": [("border", "1px solid black"), ("text-align", "left")]}]
+    ).hide(axis="index")
+    st.write(styled_df.to_html(), unsafe_allow_html=True)
     
     # Financial metrics
     st.subheader("Financial Analysis")
