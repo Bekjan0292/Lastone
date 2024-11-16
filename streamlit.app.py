@@ -239,9 +239,8 @@ if ticker:
             else:
                 return "Sell"
         elif metric == "D/E":
-            if value < 0.5:
-                return "Buy"
-        elif 0.5 <= value <= 1:
+            if value < 0.5
+                        elif 0.5 <= value <= 1:
                 return "Hold"
             else:
                 return "Sell"
