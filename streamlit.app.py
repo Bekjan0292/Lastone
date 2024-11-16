@@ -55,6 +55,28 @@ if ticker:
     )
     st.plotly_chart(fig, use_container_width=True)
     
+    # Key Metrics Table
+    st.subheader("Key Statistics")
+    key_statistics_data = {
+        "Metric": [
+            "Current Price (USD)",
+            "Market Cap (Billion USD)",
+            "52-Week Low (USD)",
+            "52-Week High (USD)"
+        ],
+        "Value": [
+            f"{info.get('currentPrice', 'N/A'):.2f}" if info.get("currentPrice") else "N/A",
+            f"{info.get('marketCap', 0) / 1e9:.2f}" if info.get("marketCap") else "N/A",
+            f"{info.get('fiftyTwoWeekLow', 'N/A'):.2f}" if info.get("fiftyTwoWeekLow") else "N/A",
+            f"{info.get('fiftyTwoWeekHigh', 'N/A'):.2f}" if info.get("fiftyTwoWeekHigh") else "N/A",
+        ]
+    }
+
+    key_statistics_df = pd.DataFrame(key_statistics_data)
+
+    # Display the table
+    st.table(key_statistics_df)
+    
     # Income Statement Section
     if st.button("View Income Statement"):
         st.subheader("Income Statement (Last 4 Years, in Millions USD)")
