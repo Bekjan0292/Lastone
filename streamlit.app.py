@@ -59,10 +59,10 @@ if ticker:
     st.subheader("Key Statistics")
     stats_data = [
         ["Current Price", f"${info['currentPrice']:.2f}", "Market Cap", f"${info['marketCap'] / 1e9:.2f}B"],
-        ["52W Range", f"{info['fiftyTwoWeekLow']} - {info['fiftyTwoWeekHigh']}", "Previous Close", f"${info['previousClose']}"],
-        ["Open", f"${info['open']}", "Day's Range", f"{info['dayLow']} - {info['dayHigh']}"],
-        ["Beta", f"{info['beta']}", "Forward PE", f"{info.get('forwardPE', 'N/A')}"],
-        ["Dividend Yield", f"{info.get('dividendYield', 0) * 100:.2f}%", "", ""]
+        ["52W Range", f"{info['fiftyTwoWeekLow']:.2f} - {info['fiftyTwoWeekHigh']:.2f}", "Previous Close", f"${info['previousClose']:.2f}"],
+        ["Open", f"${info['open']:.2f}", "Day's Range", f"{info['dayLow']:.2f} - {info['dayHigh']:.2f}"],
+        ["Beta", f"{info['beta']:.2f}", "P/E Ratio", f"{info.get('trailingPE', 'N/A'):.2f}" if info.get('trailingPE') else "N/A"],
+        ["P/B Ratio", f"{info.get('priceToBook', 'N/A'):.2f}" if info.get('priceToBook') else "N/A", "", ""]
     ]
     
     # Create a DataFrame for better display
