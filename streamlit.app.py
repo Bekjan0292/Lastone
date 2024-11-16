@@ -55,67 +55,10 @@ if ticker:
     )
     st.plotly_chart(fig, use_container_width=True)
     
-    # Income Statement Section
-    with st.expander("View Income Statement"):
-        financials = stock.financials.T
-        financials.index = pd.to_datetime(financials.index)
-        income_data = financials[
-            ["Total Revenue", "Cost Of Revenue", "Gross Profit", "Operating Income", "Pretax Income", "Net Income"]
-        ].copy()
-        income_data.rename(columns={
-            "Total Revenue": "Total Revenue",
-            "Cost Of Revenue": "COGS",
-            "Gross Profit": "Gross Profit",
-            "Operating Income": "Operating Income",
-            "Pretax Income": "Pretax Income",
-            "Net Income": "Net Income"
-        }, inplace=True)
-        income_data["EBIT"] = income_data["Operating Income"]
-        income_data["EBITDA"] = income_data["Operating Income"] + financials.get("Depreciation", 0)
-        for col in ["Total Revenue", "COGS", "Gross Profit", "Operating Income", "Pretax Income", "Net Income", "EBIT", "EBITDA"]:
-            income_data[col] = income_data[col].div(1e6).round(2)
-        income_table = income_data.T
-        income_table = income_table.applymap(lambda x: f"{x:,.2f}" if isinstance(x, (float, int)) else x)
-        st.subheader("Income Statement (Full Period, in Millions USD)")
-        st.table(income_table)
-        fig = go.Figure()
-        fig.add_trace(
-            go.Bar(
-                x=income_data.index,
-                y=income_data["Total Revenue"],
-                name="Total Revenue",
-                marker=dict(color="blue")
-            )
-        )
-        fig.add_trace(
-            go.Bar(
-                x=income_data.index,
-                y=income_data["Net Income"],
-                name="Net Income",
-                marker=dict(color="green")
-            )
-        )
-        fig.add_trace(
-            go.Scatter(
-                x=income_data.index,
-                y=income_data["EBITDA"],
-                name="EBITDA",
-                line=dict(color="red", width=2)
-            )
-        )
-        fig.update_layout(
-            title="Income Statement Metrics (Full Period)",
-            xaxis=dict(title="Year"),
-            yaxis=dict(title="Amount (in millions USD)"),
-            barmode="group",
-            template="plotly_white"
-        )
-        st.plotly_chart(fig)
-
     # Balance Sheet Section
     with st.expander("View Balance Sheet"):
         balance_sheet = stock.balance_sheet.T
-        balance_sheet.index = pd.to_datetime(balance_sheet.index)
+        balance_sheet.index = pd.to_datetime(balance_sheet.index).year
         balance_data = balance_sheet[
             ["Total Assets", "Total Liabilities Net Minority Interest", "Total Equity Gross Minority Interest"]
         ].copy()
@@ -127,11 +70,12 @@ if ticker:
         balance_data["Cash"] = balance_sheet.get("Cash And Cash Equivalents", 0)
         balance_data["Debt"] = balance_sheet.get("Short Long Term Debt Total", 0)
         balance_data["Working Capital"] = balance_data["Total Assets"] - balance_data["Total Liabilities"]
+        balance_data = balance_data.tail(5).sort_index()
         for col in ["Total Assets", "Total Liabilities", "Total Equity", "Cash", "Debt", "Working Capital"]:
             balance_data[col] = balance_data[col].div(1e6).round(2)
         balance_table = balance_data.T
         balance_table = balance_table.applymap(lambda x: f"{x:,.2f}" if isinstance(x, (float, int)) else x)
-        st.subheader("Balance Sheet (Full Period, in Millions USD)")
+        st.subheader("Balance Sheet (Last 5 Years, in Millions USD)")
         st.table(balance_table)
         fig = go.Figure()
         fig.add_trace(
@@ -159,7 +103,60 @@ if ticker:
             )
         )
         fig.update_layout(
-            title="Balance Sheet Metrics (Full Period)",
+            title="Balance Sheet Metrics (5 Years)",
+            xaxis=dict(title="Year"),
+            yaxis=dict(title="Amount (in millions USD)"),
+            barmode="group",
+            template="plotly_white"
+        )
+        st.plotly_chart(fig)
+    
+    # Cash Flow Section
+    with st.expander("View Cash Flow Statement"):
+        cash_flow = stock.cashflow.T
+        cash_flow.index = pd.to_datetime(cash_flow.index).year
+        cash_flow_data = cash_flow[
+            ["Total Cash From Operating Activities", "Total Cashflows From Investing Activities", "Total Cash From Financing Activities"]
+        ].copy()
+        cash_flow_data.rename(columns={
+            "Total Cash From Operating Activities": "Operating Cash Flow",
+            "Total Cashflows From Investing Activities": "Investing Cash Flow",
+            "Total Cash From Financing Activities": "Financing Cash Flow"
+        }, inplace=True)
+        cash_flow_data = cash_flow_data.tail(5).sort_index()
+        for col in ["Operating Cash Flow", "Investing Cash Flow", "Financing Cash Flow"]:
+            cash_flow_data[col] = cash_flow_data[col].div(1e6).round(2)
+        cash_flow_table = cash_flow_data.T
+        cash_flow_table = cash_flow_table.applymap(lambda x: f"{x:,.2f}" if isinstance(x, (float, int)) else x)
+        st.subheader("Cash Flow Statement (Last 5 Years, in Millions USD)")
+        st.table(cash_flow_table)
+        fig = go.Figure()
+        fig.add_trace(
+            go.Bar(
+                x=cash_flow_data.index,
+                y=cash_flow_data["Operating Cash Flow"],
+                name="Operating Cash Flow",
+                marker=dict(color="blue")
+            )
+        )
+        fig.add_trace(
+            go.Bar(
+                x=cash_flow_data.index,
+                y=cash_flow_data["Investing Cash Flow"],
+                name="Investing Cash Flow",
+                marker=dict(color="red")
+            )
+        )
+        fig.add_trace(
+            go.Bar(
+                x=cash_flow_data.index,
+                y=cash_flow_data["Financing Cash Flow"],
+                name="Financing Cash Flow",
+                marker=dict(color="green")
+            )
+        )
+        fig.update_layout(
+            title="Cash Flow Statement Metrics (5 Years)",
             xaxis=dict(title="Year"),
             yaxis=dict(title="Amount (in millions USD)"),
             barmode="group",
