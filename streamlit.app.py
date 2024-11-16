@@ -22,7 +22,9 @@ if ticker:
     # About the Company - Expandable Section
     with st.expander("About the Company"):
         if "longBusinessSummary" in info:
-            st.write(info['longBusinessSummary'])
+            # Extract the first 250 characters for a short summary
+            short_summary = info["longBusinessSummary"][:250] + "..."
+            st.write(short_summary)
         else:
             st.write("Company information is not available.")
     
