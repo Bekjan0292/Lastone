@@ -61,130 +61,154 @@ if ticker:
         financials = stock.financials.T
         balance_sheet = stock.balance_sheet.T
 
-        # Convert index to years and sort
-        financials.index = pd.to_datetime(financials.index).year
-        balance_sheet.index = pd.to_datetime(balance_sheet.index).year
-        financials = financials[financials.index != 2019].sort_index(ascending=False).head(4)  # Exclude 2019
-        balance_sheet = balance_sheet[balance_sheet.index != 2019].sort_index(ascending=False).head(4)  # Exclude 2019
-        
-        # Extract required metrics
-        total_assets = balance_sheet["Total Assets"]
-        total_equity = balance_sheet["Total Equity Gross Minority Interest"]
-        net_income = financials["Net Income"]
+        # Check for missing or empty data
+        if financials.empty or balance_sheet.empty:
+            st.error("Financial or balance sheet data is not available for the selected stock.")
+        else:
+            # Convert index to years and sort
+            financials.index = pd.to_datetime(financials.index).year
+            balance_sheet.index = pd.to_datetime(balance_sheet.index).year
+            financials = financials[financials.index != 2019].sort_index(ascending=False).head(4)  # Exclude 2019
+            balance_sheet = balance_sheet[balance_sheet.index != 2019].sort_index(ascending=False).head(4)  # Exclude 2019
+            
+            # Extract required metrics
+            total_assets = balance_sheet["Total Assets"]
+            total_equity = balance_sheet["Total Equity Gross Minority Interest"]
+            net_income = financials["Net Income"]
 
-        # Calculate ROA and ROE
-        roa = (net_income / total_assets * 100).round(2)
-        roe = (net_income / total_equity * 100).round(2)
+            # Calculate ROA and ROE
+            roa = (net_income / total_assets * 100).round(2)
+            roe = (net_income / total_equity * 100).round(2)
 
-        income_data = financials[
-            ["Total Revenue", "Cost Of Revenue", "Gross Profit", "Operating Income", "Pretax Income", "Net Income"]
-        ].copy()
-        income_data.rename(columns={
-            "Total Revenue": "Total Revenue",
-            "Cost Of Revenue": "COGS",
-            "Gross Profit": "Gross Profit",
-            "Operating Income": "Operating Income",
-            "Pretax Income": "Pretax Income",
-            "Net Income": "Net Income"
-        }, inplace=True)
-        income_data["ROA (%)"] = roa
-        income_data["ROE (%)"] = roe
+            income_data = financials[
+                ["Total Revenue", "Cost Of Revenue", "Gross Profit", "Operating Income", "Pretax Income", "Net Income"]
+            ].copy()
+            income_data.rename(columns={
+                "Total Revenue": "Total Revenue",
+                "Cost Of Revenue": "COGS",
+                "Gross Profit": "Gross Profit",
+                "Operating Income": "Operating Income",
+                "Pretax Income": "Pretax Income",
+                "Net Income": "Net Income"
+            }, inplace=True)
+            income_data["ROA (%)"] = roa
+            income_data["ROE (%)"] = roe
 
-        for col in ["Total Revenue", "COGS", "Gross Profit", "Operating Income", "Pretax Income", "Net Income"]:
-            income_data[col] = income_data[col].div(1e6).round(2)
-        
-        income_table = income_data.T
-        income_table = income_table.applymap(lambda x: f"{x:,.2f}" if isinstance(x, (float, int)) else x)
-        st.table(income_table)
-        
-        # Income Statement Graph
-        fig = go.Figure()
-        fig.add_trace(
-            go.Bar(
-                x=income_data.index.astype(str),
-                y=income_data["Total Revenue"],
-                name="Total Revenue",
-                marker=dict(color="indigo")
+            for col in ["Total Revenue", "COGS", "Gross Profit", "Operating Income", "Pretax Income", "Net Income"]:
+                income_data[col] = income_data[col].div(1e6).round(2)
+            
+            income_table = income_data.T
+            income_table = income_table.applymap(lambda x: f"{x:,.2f}" if isinstance(x, (float, int)) else x)
+            st.table(income_table)
+            
+            # Income Statement Graph
+            fig = go.Figure()
+            fig.add_trace(
+                go.Bar(
+                    x=income_data.index.astype(str),
+                    y=income_data["Total Revenue"],
+                    name="Total Revenue",
+                    marker=dict(color="indigo")
+                )
             )
-        )
-        fig.add_trace(
-            go.Bar(
-                x=income_data.index.astype(str),
-                y=income_data["Net Income"],
-                name="Net Income",
-                marker=dict(color="orange")
+            fig.add_trace(
+                go.Bar(
+                    x=income_data.index.astype(str),
+                    y=income_data["Net Income"],
+                    name="Net Income",
+                    marker=dict(color="orange")
+                )
             )
-        )
-        fig.add_trace(
-            go.Scatter(
-                x=income_data.index.astype(str),
-                y=income_data["ROE (%)"],
-                name="ROE (%)",
-                line=dict(color="teal", width=3)
+            fig.add_trace(
+                go.Scatter(
+                    x=income_data.index.astype(str),
+                    y=income_data["ROE (%)"],
+                    name="ROE (%)",
+                    line=dict(color="teal", width=3)
+                )
             )
-        )
-        fig.update_layout(
-            title="Income Statement Metrics (Last 4 Years)",
-            xaxis=dict(title="Year", type="category"),  # Ensure years are categorical
-            yaxis=dict(title="Amount (in millions USD)"),
-            barmode="group",
-            template="plotly_white"
-        )
-        st.plotly_chart(fig)
+            fig.update_layout(
+                title="Income Statement Metrics (Last 4 Years)",
+                xaxis=dict(title="Year", type="category"),  # Ensure years are categorical
+                yaxis=dict(title="Amount (in millions USD)"),
+                barmode="group",
+                template="plotly_white"
+            )
+            st.plotly_chart(fig)
     
     # Balance Sheet Section
     if st.button("View Balance Sheet"):
         st.subheader("Balance Sheet (Last 4 Years, in Millions USD)")
-        balance_sheet = balance_sheet.sort_index(ascending=False).head(4)  # Already filtered for last 4 years
-        balance_data = balance_sheet[
-            ["Total Assets", "Total Liabilities Net Minority Interest", "Total Equity Gross Minority Interest"]
-        ].copy()
-        balance_data.rename(columns={
-            "Total Assets": "Total Assets",
-            "Total Liabilities Net Minority Interest": "Total Liabilities",
-            "Total Equity Gross Minority Interest": "Total Equity"
-        }, inplace=True)
-        balance_data["Cash"] = balance_sheet.get("Cash And Cash Equivalents", 0)
-        balance_data["Debt"] = balance_sheet.get("Short Long Term Debt Total", 0)
-        balance_data["Working Capital"] = balance_data["Total Assets"] - balance_data["Total Liabilities"]
-        for col in ["Total Assets", "Total Liabilities", "Total Equity", "Cash", "Debt", "Working Capital"]:
-            balance_data[col] = balance_data[col].div(1e6).round(2)
-        balance_table = balance_data.T
-        balance_table = balance_table.applymap(lambda x: f"{x:,.2f}" if isinstance(x, (float, int)) else x)
-        st.table(balance_table)
-        fig = go.Figure()
-        fig.add_trace(
-            go.Bar(
-                x=balance_data.index.astype(str),
-                y=balance_data["Total Assets"],
-                name="Total Assets",
-                marker=dict(color="purple")
+
+        # Fetch balance sheet data
+        balance_sheet = stock.balance_sheet.T  # Transpose for easier row handling
+        if balance_sheet.empty:
+            st.error("Balance sheet data is not available for the selected stock.")
+        else:
+            # Convert index to years
+            balance_sheet.index = pd.to_datetime(balance_sheet.index).year
+
+            # Remove 2019 and keep only the last 4 years
+            balance_sheet = balance_sheet.sort_index(ascending=False).head(4)
+
+            # Extract key metrics
+            balance_data = balance_sheet[
+                ["Total Assets", "Total Liabilities Net Minority Interest", "Total Equity Gross Minority Interest"]
+            ].copy()
+            balance_data.rename(columns={
+                "Total Assets": "Total Assets",
+                "Total Liabilities Net Minority Interest": "Total Liabilities",
+                "Total Equity Gross Minority Interest": "Total Equity"
+            }, inplace=True)
+
+            # Add derived metrics
+            balance_data["Cash"] = balance_sheet.get("Cash And Cash Equivalents", 0)
+            balance_data["Debt"] = balance_sheet.get("Short Long Term Debt Total", 0)
+            balance_data["Working Capital"] = balance_data["Total Assets"] - balance_data["Total Liabilities"]
+
+            # Format data
+            for col in ["Total Assets", "Total Liabilities", "Total Equity", "Cash", "Debt", "Working Capital"]:
+                balance_data[col] = balance_data[col].div(1e6).round(2)
+
+            # Display table
+            balance_table = balance_data.T
+            balance_table = balance_table.applymap(lambda x: f"{x:,.2f}" if isinstance(x, (float, int)) else x)
+            st.table(balance_table)
+
+            # Plot Balance Sheet Metrics
+            fig = go.Figure()
+            fig.add_trace(
+                go.Bar(
+                    x=balance_data.index.astype(str),
+                    y=balance_data["Total Assets"],
+                    name="Total Assets",
+                    marker=dict(color="purple")
+                )
             )
-        )
-        fig.add_trace(
-            go.Bar(
-                x=balance_data.index.astype(str),
-                y=balance_data["Total Liabilities"],
-                name="Total Liabilities",
-                marker=dict(color="red")
+            fig.add_trace(
+                go.Bar(
+                    x=balance_data.index.astype(str),
+                    y=balance_data["Total Liabilities"],
+                    name="Total Liabilities",
+                    marker=dict(color="red")
+                )
             )
-        )
-        fig.add_trace(
-            go.Bar(
-                x=balance_data.index.astype(str),
-                y=balance_data["Total Equity"],
-                name="Total Equity",
-                marker=dict(color="green")
+            fig.add_trace(
+                go.Bar(
+                    x=balance_data.index.astype(str),
+                    y=balance_data["Total Equity"],
+                    name="Total Equity",
+                    marker=dict(color="green")
+                )
             )
-        )
-        fig.update_layout(
-            title="Balance Sheet Metrics (Last 4 Years)",
-            xaxis=dict(title="Year", type="category"),
-            yaxis=dict(title="Amount (in millions USD)"),
-            barmode="group",
-            template="plotly_white"
-        )
-        st.plotly_chart(fig)
+            fig.update_layout(
+                title="Balance Sheet Metrics (Last 4 Years)",
+                xaxis=dict(title="Year", type="category"),
+                yaxis=dict(title="Amount (in millions USD)"),
+                barmode="group",
+                template="plotly_white"
+            )
+            st.plotly_chart(fig)
     
     # Recommendation Section
     st.subheader("Recommendation")
@@ -217,7 +241,8 @@ if ticker:
         elif metric == "D/E":
             if value < 0.5:
                 return "Buy"
-            elif 0.5 <= value <= 1:
+            elif 0.5
+                        elif 0.5 <= value <= 1:
                 return "Hold"
             else:
                 return "Sell"
