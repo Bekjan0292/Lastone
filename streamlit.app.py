@@ -86,12 +86,13 @@ if ticker:
         # Ensure data is for the last 5 years
         income_data = income_data.tail(5).sort_index()
 
-        # Convert monetary values to millions and round to 2 decimals
+        # Convert monetary values to millions and format to 2 decimal places
         for col in ["Total Revenue", "COGS", "Gross Profit", "Operating Income", "Pretax Income", "Net Income", "EBIT", "EBITDA"]:
-            income_data[col] = (income_data[col] / 1e6).round(2)
+            income_data[col] = income_data[col].div(1e6).round(2)
 
         # Transpose table: Switch rows and columns
         income_table = income_data.T
+        income_table = income_table.applymap(lambda x: f"{x:,.2f}" if isinstance(x, (float, int)) else x)
 
         # Display the table
         st.subheader("Income Statement (Last 5 Years, in Millions USD)")
