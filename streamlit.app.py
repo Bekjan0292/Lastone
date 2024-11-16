@@ -58,11 +58,11 @@ if ticker:
     # Key statistics in compact table format
     st.subheader("Key Statistics")
     stats_data = [
-        ["Current Price", f"${info['currentPrice']:.2f}", "Market Cap", f"${info['marketCap'] / 1e9:.2f}B"],
+        ["Current Price", f"${info['currentPrice']:.2f}", "Market Cap", f"${info['marketCap'] / 1e9:,.2f}B"],
         ["52W Range", f"{info['fiftyTwoWeekLow']:.2f} - {info['fiftyTwoWeekHigh']:.2f}", "Previous Close", f"${info['previousClose']:.2f}"],
         ["Open", f"${info['open']:.2f}", "Day's Range", f"{info['dayLow']:.2f} - {info['dayHigh']:.2f}"],
         ["Beta", f"{info['beta']:.2f}", "P/E Ratio", f"{info.get('trailingPE', 'N/A'):.2f}" if info.get('trailingPE') else "N/A"],
-        ["P/B Ratio", f"{info.get('priceToBook', 'N/A'):.2f}" if info.get('priceToBook') else "N/A", "", ""]
+        ["P/B Ratio", f"{info.get('priceToBook', 'N/A'):.2f}" if info.get('priceToBook') else "N/A", "EPS", f"{info.get('trailingEps', 'N/A'):.2f}" if info.get('trailingEps') else "N/A"]
     ]
     
     # Create a DataFrame for better display
