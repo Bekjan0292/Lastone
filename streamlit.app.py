@@ -170,3 +170,63 @@ if ticker:
             template="plotly_white"
         )
         st.plotly_chart(fig)
+    
+    # Recommendation Section
+    st.subheader("Recommendation")
+    pe_ratio = info.get("trailingPE", "N/A")
+    pb_ratio = info.get("priceToBook", "N/A")
+    de_ratio = info.get("debtToEquity", "N/A")
+    fcf = info.get("freeCashflow", "N/A")
+    
+    # Convert free cash flow to millions and format it
+    fcf_text = f"{(fcf / 1e6):,.2f}M USD" if isinstance(fcf, (int, float)) else "N/A"
+    
+    # Define recommendations
+    def get_recommendation(metric, value):
+        if not isinstance(value, (int, float)):  # Handle non-numeric values
+            return "N/A"
+        if metric == "P/E":
+            if value < 15:
+                return "Buy"
+            elif 15 <= value <= 25:
+                return "Hold"
+            else:
+                return "Sell"
+        elif metric == "P/B":
+            if value < 1:
+                return "Buy"
+            elif 1 <= value <= 3:
+                return "Hold"
+            else:
+                return "Sell"
+        elif metric == "D/E":
+            if value < 0.5:
+                return "Buy"
+            elif 0.5 <= value <= 1:
+                return "Hold"
+            else:
+                return "Sell"
+        elif metric == "FCF":
+            if value > 0:
+                return "Buy"
+            else:
+                return "Sell"
+        else:
+            return "N/A"
+
+    # Prepare data for the table
+    recommendation_data = [
+        ["P/E Ratio", f"{pe_ratio:.2f}" if isinstance(pe_ratio, (int, float)) else "N/A", "Evaluates the stock's price relative to its earnings.", get_recommendation("P/E", pe_ratio)],
+        ["P/B Ratio", f"{pb_ratio:.2f}" if isinstance(pb_ratio, (int, float)) else "N/A", "Compares the stock's market price to book value.", get_recommendation("P/B", pb_ratio)],
+        ["D/E Ratio", f"{de_ratio:.2f}" if isinstance(de_ratio, (int, float)) else "N/A", "Measures financial leverage (debt vs equity).", get_recommendation("D/E", de_ratio)],
+        ["Free Cash Flow (FCF)", fcf_text, "Cash generated after capital expenses.", get_recommendation("FCF", fcf)],
+    ]
+
+    # Create a DataFrame
+    recommendation_df = pd.DataFrame(recommendation_data, columns=["Metric", "Current Value", "Explanation", "Recommendation"])
+    
+    # Display the Recommendation Table
+    st.table(recommendation_df)
+
+else:
+    st.warning("Please enter a valid ticker symbol.")
