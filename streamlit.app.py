@@ -1,101 +1,174 @@
 import streamlit as st
 import yfinance as yf
 import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
+import numpy as np
+import plotly.graph_objs as go
+import wikipediaapi
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
 
-# Page configuration
-st.set_page_config(page_title="Enhanced Portfolio Analysis Dashboard", layout="wide")
+# Set page configuration (must be the first Streamlit command)
+st.set_page_config(page_title="Stock Analysis Dashboard", layout="wide", initial_sidebar_state="expanded")
 
-# App title
-st.title("📊 Enhanced Portfolio Analysis Dashboard")
+# Minimalist black theme styling
+st.markdown("""
+    <style>
+    body {
+        background-color: #1c1c1c;
+        color: #e0e0e0;
+    }
+    .css-1v3fvcr {
+        background-color: #1c1c1c !important;
+    }
+    .stButton>button {
+        background-color: #00BFFF !important;
+        color: white !important;
+    }
+    .css-2trqyj {
+        color: white !important;
+    }
+    h1, h2, h3, h4, h5 {
+        color: #00BFFF;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
-# Sidebar for input
-st.sidebar.header("Input Parameters")
-ticker_list = st.sidebar.text_input("Enter ticker symbols (e.g., AAPL, MSFT, TSLA)", value="AAPL, MSFT")
-tickers = [ticker.strip().upper() for ticker in ticker_list.split(",")]
+# Helper functions for technical indicators
+def calculate_sma(data, period=50):
+    return data['Close'].rolling(window=period).mean()
 
+def calculate_rsi(data, period=20):
+    delta = data['Close'].diff(1)
+    gain = delta.where(delta > 0, 0).rolling(window=period).mean()
+    loss = -delta.where(delta < 0, 0).rolling(window=period).mean()
+    rs = gain / loss
+    return 100 - (100 / (1 + rs))
+
+def calculate_macd(data):
+    ema_12 = data['Close'].ewm(span=12, adjust=False).mean()
+    ema_26 = data['Close'].ewm(span=26, adjust=False).mean()
+    return ema_12 - ema_26
+
+# Caching stock data fetching for 5 years
 @st.cache_data
-def fetch_portfolio_data(tickers):
-    """Fetches historical data for the tickers."""
-    return yf.download(" ".join(tickers), period="6mo", group_by='ticker')  # Shorter period for faster load
+def load_stock_data(ticker, start_date, end_date):
+    stock = yf.Ticker(ticker)
+    return stock.history(start=start_date, end=end_date)
 
-portfolio_data = fetch_portfolio_data(tickers)
+# Caching company information fetching
+@st.cache_data
+def get_company_info(ticker):
+    stock = yf.Ticker(ticker)
+    return {
+        "Sector": stock.info.get("sector", "N/A"),
+        "Country": stock.info.get("country", "N/A"),
+        "PE Ratio": stock.info.get("trailingPE", "N/A"),
+        "PB Ratio": stock.info.get("priceToBook", "N/A"),
+        "EPS": stock.info.get("trailingEps", "N/A"),
+    }
 
-# Portfolio Overview Section
-st.header("Portfolio Overview")
+# Caching model training
+@st.cache_resource
+def train_model(X_train, y_train):
+    model = RandomForestClassifier(n_estimators=10)  # Reduced number of estimators for faster training
+    model.fit(X_train, y_train)
+    return model
 
-if not portfolio_data.empty:
-    col1, col2, col3 = st.columns(3)
+# Main function
+def main():
+    # Sidebar for ticker input and additional options
+    ticker = st.sidebar.text_input("Stock symbol:", "AAPL")
 
-    with col1:
-        # Total Value Calculation
-        total_value = sum([portfolio_data[ticker]["Close"].iloc[-1] for ticker in tickers])
-        st.metric("💰 Total Value", f"${total_value:,.2f}")
+    # Moving Average settings
+    short_ma_days = st.sidebar.slider("Short-term moving average days:", 10, 100, 10)
+    long_ma_days = st.sidebar.slider("Long-term moving average days:", 50, 200, 50)
+    
+    # Date range for fetching data
+    start_date = st.sidebar.date_input("Start Date", pd.to_datetime("2021-01-01"))
+    end_date = st.sidebar.date_input("End Date", pd.to_datetime("today"))
 
-    with col2:
-        # Total Returns Calculation
-        total_returns = sum([(portfolio_data[ticker]["Close"].iloc[-1] - portfolio_data[ticker]["Close"].iloc[0]) / portfolio_data[ticker]["Close"].iloc[0] * 100
-                             for ticker in tickers])
-        st.metric("📈 Total Returns", f"{total_returns / len(tickers):.2f}%")
+    # Load stock data and company info
+    stock_data = load_stock_data(ticker, start_date, end_date)
+    company_info = get_company_info(ticker)
+    
+    # 1. Company Information
+    st.header("Company Information")
+    st.write("### Basic Info")
+    st.write(f"**Sector:** {company_info['Sector']}")
+    st.write(f"**Country:** {company_info['Country']}")
+    
+    # 2. Fundamental Analysis
+    st.header("Fundamental Analysis")
+    st.write(f"**P/E Ratio:** {company_info['PE Ratio']}")
+    st.write(f"**P/B Ratio:** {company_info['PB Ratio']}")
+    st.write(f"**EPS:** {company_info['EPS']}")
+    
+    # Recommendations based on P/E ratio
+    st.write("### Recommendation")
+    if company_info['PE Ratio'] != "N/A" and company_info['PE Ratio'] < 15:
+        recommendation = "Buy"
+        description = "Undervalued"
+    elif company_info['PE Ratio'] != "N/A" and company_info['PE Ratio'] > 25:
+        recommendation = "Sell"
+        description = "Overvalued"
+    else:
+        recommendation = "Hold"
+        description = "Fairly Valued"
+    
+    st.write(f"**Recommendation:** {recommendation}")
+    st.write(f"**Description:** {description}")
+    
+    # 3. Technical Analysis
+    st.header("Technical Analysis")
+    
+    # Calculate custom SMA, RSI, MACD based on user input
+    stock_data['SMA_Short'] = calculate_sma(stock_data, short_ma_days)
+    stock_data['SMA_Long'] = calculate_sma(stock_data, long_ma_days)
+    stock_data['RSI'] = calculate_rsi(stock_data, 20)
+    stock_data['MACD'] = calculate_macd(stock_data)
+    
+    # Plotting with Plotly
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=stock_data.index, y=stock_data['Close'], mode='lines', name="Close Price"))
+    fig.add_trace(go.Scatter(x=stock_data.index, y=stock_data['SMA_Short'], mode='lines', name=f"SMA {short_ma_days}"))
+    fig.add_trace(go.Scatter(x=stock_data.index, y=stock_data['SMA_Long'], mode='lines', name=f"SMA {long_ma_days}"))
+    fig.update_layout(title=f"Close Price with SMA {short_ma_days} and SMA {long_ma_days}", template="plotly_dark")
+    st.plotly_chart(fig, use_container_width=True)
+    
+    # RSI
+    st.write("### RSI (20)")
+    fig_rsi = go.Figure()
+    fig_rsi.add_trace(go.Scatter(x=stock_data.index, y=stock_data['RSI'], mode='lines', name="RSI"))
+    fig_rsi.update_layout(title="RSI (20)", template="plotly_dark")
+    st.plotly_chart(fig_rsi, use_container_width=True)
+    
+    # MACD
+    st.write("### MACD")
+    fig_macd = go.Figure()
+    fig_macd.add_trace(go.Scatter(x=stock_data.index, y=stock_data['MACD'], mode='lines', name="MACD"))
+    fig_macd.update_layout(title="MACD", template="plotly_dark")
+    st.plotly_chart(fig_macd, use_container_width=True)
+    
+    # 4. Prediction Model
+    st.header("Prediction Model")
+    stock_data['Target'] = np.where(stock_data['Close'].shift(-1) > stock_data['Close'], 1, 0)
+    
+    # Use relevant features for prediction and drop rows with missing values
+    feature_columns = ['SMA_Short', 'SMA_Long', 'RSI', 'MACD']
+    stock_data = stock_data.dropna(subset=feature_columns + ['Target'])
+    
+    features = stock_data[feature_columns]
+    target = stock_data['Target']
+    
+    # Check if there is enough data for train_test_split
+    if len(features) < 5:  # Adjust threshold based on minimum requirement for train_test_split
+        st.write("Not enough data available for prediction within the selected date range and indicator settings.")
+    else:
+        X_train, X_test, y_train, y_test = train_test_split(features, target, test_size=0.2, random_state=42)
+        model = train_model(X_train, y_train)
+        accuracy = model.score(X_test, y_test)
+        
+        st.write(f"Prediction Model Accuracy: {accuracy:.2%}")
 
-    @st.cache_data
-    def get_dividend_yield(ticker):
-        """Fetches dividend yield for a single ticker."""
-        stock = yf.Ticker(ticker)
-        return stock.info.get("dividendYield", 0)
-
-    avg_dividend_yield = sum(get_dividend_yield(ticker) for ticker in tickers) / len(tickers)
-    with col3:
-        st.metric("💸 Est. Dividend Yield", f"{avg_dividend_yield:.2f}%")
-
-    # Performance Chart
-    st.subheader("Performance Over Time")
-    performance_fig = go.Figure()
-    for ticker in tickers:
-        performance_fig.add_trace(go.Scatter(x=portfolio_data[ticker].index, y=portfolio_data[ticker]["Close"], mode='lines', name=ticker))
-    performance_fig.update_layout(title="Portfolio Performance Over Time", yaxis_title="Stock Price", xaxis_title="Date")
-    st.plotly_chart(performance_fig, use_container_width=True)
-
-    # Financial Health - Radar Chart
-    st.subheader("Financial Health Snapshot")
-    categories = ["Dividend", "Value", "Future", "Health", "Past"]
-    sample_values = [3, 4, 2, 5, 3]  # Placeholder values; replace with calculations if available
-    radar_fig = go.Figure(data=go.Scatterpolar(r=sample_values, theta=categories, fill='toself'))
-    radar_fig.update_layout(polar=dict(radialaxis=dict(visible=True, range=[0, 5])), showlegend=False)
-    st.plotly_chart(radar_fig, use_container_width=True)
-
-    # Dividend Analysis
-    st.subheader("Dividend Analysis")
-    dividend_col1, dividend_col2 = st.columns(2)
-    with dividend_col1:
-        st.metric("🔮 Expected Dividends (Next 12M)", f"${avg_dividend_yield * total_value:.2f}")
-    with dividend_col2:
-        yield_on_cost = avg_dividend_yield * 100
-        st.metric("📉 Yield on Cost", f"{yield_on_cost:.2f}%")
-
-    # Growth Forecasts (Sample Data)
-    st.subheader("Growth Forecasts Comparison")
-    forecast_data = pd.DataFrame({
-        "Metric": ["Earnings Growth (next 3 years)", "Revenue Growth (next 3 years)", "Return on Equity (next 3 years)"],
-        "Company": [5.2, 6.1, 8.4],
-        "Industry": [4.5, 5.7, 7.8],
-        "Market": [7.5, 6.9, 10.2]
-    })
-    growth_fig = px.bar(forecast_data, x="Metric", y=["Company", "Industry", "Market"], barmode="group",
-                        title="Growth Forecasts Comparison")
-    st.plotly_chart(growth_fig, use_container_width=True)
-
-    # Management & Key Information
-    st.subheader("Management & Key Information")
-    for ticker in tickers:
-        stock = yf.Ticker(ticker)
-        st.write(f"### {ticker} - {stock.info.get('longName', 'Company Name Not Available')}")
-        st.write(f"CEO: {stock.info.get('ceo', 'N/A')}")
-        st.write(f"Market Cap: {stock.info.get('marketCap', 'Data Not Available')}")
-        st.write("---")
-else:
-    st.warning("No valid portfolio data available.")
-
-# Footer with additional info or company links
-st.sidebar.write("Data provided by Yahoo Finance")
+if __name__ == "__main__":
+    main()
