@@ -66,7 +66,7 @@ if ticker:
     ]
     
     # Create a DataFrame for better display
-    stats_df = pd.DataFrame(stats_data, columns=["Metric", "Value", "Metric", "Value"])
+    stats_df = pd.DataFrame(stats_data, columns=["Metric 1", "Value 1", "Metric 2", "Value 2"])
     st.table(stats_df)
     
     # Financial metrics
