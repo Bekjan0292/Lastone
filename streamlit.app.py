@@ -14,76 +14,80 @@ ticker = st.sidebar.text_input("Enter Stock Ticker:", value="AAPL")
 if ticker:
     stock = yf.Ticker(ticker)
     info = stock.info
-    historical = stock.history(period="1y")
     
     # Layout
     st.title(f"{info['longName']} ({ticker.upper()})")
     
-    # About the Company - Expandable Section
-    with st.expander("About the Company"):
-        if "longBusinessSummary" in info:
-            st.write(info["longBusinessSummary"])
-        else:
-            st.write("Company information is not available.")
+    # Income Statement Section
+    st.subheader("Income Statement")
     
-    # Display Industry, Country, and Website
-    st.write(f"**Industry:** {info.get('industry', 'N/A')}")
-    st.write(f"**Country:** {info.get('country', 'N/A')}")
-    if "website" in info:
-        st.markdown(f"[**Website**]({info['website']})", unsafe_allow_html=True)
-    else:
-        st.write("**Website:** N/A")
-    
-    # Japanese Candlestick Chart
+    # Mock data for Income Statement
+    # Replace this mock data with actual financials from yfinance or another API
+    income_data = {
+        "Year": ["2022", "2021", "2020"],
+        "Total Revenue": [394.33, 365.82, 274.51],
+        "COGS": [233.79, 219.32, 169.56],
+        "Gross Profit": [160.54, 146.50, 104.95],
+        "Operating Income": [119.34, 108.85, 66.29],
+        "Pretax Income": [112.53, 100.56, 62.44],
+        "Net Income": [95.11, 84.95, 57.41],
+        "EBIT": [119.34, 108.85, 66.29],
+        "EBITDA": [125.76, 114.65, 70.12],
+        "ROE": [48.23, 45.61, 42.11]
+    }
+    income_df = pd.DataFrame(income_data)
+    income_df.set_index("Year", inplace=True)
+
+    # Plot Net Income, Total Revenue, and ROE
     fig = go.Figure()
     fig.add_trace(
-        go.Candlestick(
-            x=historical.index,
-            open=historical['Open'],
-            high=historical['High'],
-            low=historical['Low'],
-            close=historical['Close'],
-            name='Candlesticks'
+        go.Bar(
+            x=income_df.index,
+            y=income_df["Net Income"],
+            name="Net Income",
+            marker=dict(color="blue"),
+            yaxis="y1"
         )
     )
+    fig.add_trace(
+        go.Bar(
+            x=income_df.index,
+            y=income_df["Total Revenue"],
+            name="Total Revenue",
+            marker=dict(color="green"),
+            yaxis="y1"
+        )
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=income_df.index,
+            y=income_df["ROE"],
+            name="ROE (%)",
+            line=dict(color="red", width=2),
+            yaxis="y2"
+        )
+    )
+
+    # Configure the layout
     fig.update_layout(
-        xaxis_title="Date",
-        yaxis_title="Price (USD)",
-        template="plotly_white",
-        hovermode="x",
-        showlegend=False
+        title="Income Statement Metrics",
+        xaxis=dict(title="Year"),
+        yaxis=dict(title="Amount (in billions USD)", side="left"),
+        yaxis2=dict(
+            title="ROE (%)",
+            overlaying="y",
+            side="right",
+            showgrid=False
+        ),
+        legend=dict(x=0.01, y=0.99),
+        barmode="group",
+        template="plotly_white"
     )
-    st.plotly_chart(fig, use_container_width=True)
-    
-    # Key statistics with explanations
-    st.subheader("Key Statistics")
-    stats_data = [
-        ["Current Price", f"${info['currentPrice']:.2f}", "The current trading price of the stock."],
-        ["Market Cap", f"${info['marketCap'] / 1e9:,.2f}B", "The total value of the company based on its stock price and shares outstanding."],
-        ["52W Range", f"{info['fiftyTwoWeekLow']:.2f} - {info['fiftyTwoWeekHigh']:.2f}", "The range of the stock price over the last 52 weeks."],
-        ["Previous Close", f"${info['previousClose']:.2f}", "The last recorded closing price of the stock."],
-        ["Open", f"${info['open']:.2f}", "The stock price at the start of the trading session."],
-        ["Day's Range", f"{info['dayLow']:.2f} - {info['dayHigh']:.2f}", "The lowest and highest price during today's trading session."],
-        ["Beta", f"{info['beta']:.2f}", "A measure of the stock's volatility compared to the overall market."],
-        ["P/E Ratio", f"{info.get('trailingPE', 'N/A'):.2f}" if info.get('trailingPE') else "N/A", "The price-to-earnings ratio, showing the price relative to earnings per share."],
-        ["P/B Ratio", f"{info.get('priceToBook', 'N/A'):.2f}" if info.get('priceToBook') else "N/A", "The price-to-book ratio, showing the price relative to book value per share."],
-        ["EPS", f"{info.get('trailingEps', 'N/A'):.2f}" if info.get('trailingEps') else "N/A", "Earnings per share, showing profit allocated to each outstanding share."]
-    ]
-    
-    # Create a DataFrame without row numeration
-    stats_df = pd.DataFrame(stats_data, columns=["Metric", "Value", "Explanation"])
-    st.markdown(
-        stats_df.to_html(index=False, escape=False),  # index=False removes row numeration
-        unsafe_allow_html=True
-    )
-    
-    # Financial metrics
-    st.subheader("Financial Analysis")
-    with st.expander("Income Statement"):
-        st.write("Revenue, Net Income, etc.")
-    with st.expander("Balance Sheet"):
-        st.write("Total Assets, Liabilities, etc.")
-    with st.expander("Cash Flow"):
-        st.write("Operating Cash Flow, etc.")
+    st.plotly_chart(fig)
+
+    # Display Table
+    st.subheader("Detailed Income Statement")
+    st.table(income_df)
+
 else:
     st.warning("Please enter a valid ticker symbol.")
