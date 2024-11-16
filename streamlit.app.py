@@ -19,9 +19,12 @@ if ticker:
     # Layout
     st.title(f"{info['longName']} ({ticker.upper()})")
     
-    # Short Company Info
-    if "longBusinessSummary" in info:
-        st.write(f"**About the Company:** {info['longBusinessSummary']}")
+    # About the Company - Expandable Section
+    with st.expander("About the Company"):
+        if "longBusinessSummary" in info:
+            st.write(info['longBusinessSummary'])
+        else:
+            st.write("Company information is not available.")
     
     # Japanese Candlestick Chart
     fig = go.Figure()
