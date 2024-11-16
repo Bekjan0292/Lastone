@@ -85,37 +85,6 @@ def fundamental_analysis():
     except Exception:
         st.warning("Unable to fetch financial history data.")
 
-    # Interactive Historical Stock Price Chart
-    st.subheader("Historical Stock Price")
-    try:
-        history = stock.history(period="5y")
-        fig = px.line(
-            history.reset_index(),
-            x="Date",
-            y="Close",
-            title="Stock Price Over the Last 5 Years",
-            labels={"Date": "Date", "Close": "Closing Price (USD)"}
-        )
-        st.plotly_chart(fig)
-    except Exception:
-        st.warning("Unable to fetch historical stock price data.")
-
-    # PE Ratio Visualization
-    st.subheader("PE Ratio Comparison")
-    try:
-        pe_ratio = info.get("forwardPE", None)
-        peer_pe_ratios = [10, 15, 20, 25, 30, 35]  # Example peer data
-        fig = px.box(
-            peer_pe_ratios,
-            points="all",
-            title="PE Ratio Distribution Among Peers",
-            labels={"value": "PE Ratio"}
-        )
-        fig.add_trace(go.Scatter(x=[0], y=[pe_ratio], mode="markers", name="Company PE", marker=dict(size=12, color="red")))
-        st.plotly_chart(fig)
-    except Exception:
-        st.warning("Unable to visualize PE Ratio.")
-
     # Recommendation Visualization
     st.subheader("Recommendation")
     recommendation = "Hold"
@@ -137,8 +106,8 @@ def fundamental_analysis():
     ))
     st.plotly_chart(fig)
 
-    # Navigation
-    if st.button("Back to Start"):
+    # Back button to navigate to the Main Page
+    if st.button("Back to Main Page"):
         st.session_state["page"] = "Start"
 
 # Technical Analysis Placeholder
@@ -146,8 +115,8 @@ def technical_analysis():
     st.title("Technical Analysis")
     st.write("Technical analysis functionality will go here.")
 
-    # Navigation
-    if st.button("Back to Start"):
+    # Back button to navigate to the Main Page
+    if st.button("Back to Main Page"):
         st.session_state["page"] = "Start"
 
 # Navigation Logic
