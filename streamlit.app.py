@@ -195,7 +195,7 @@ if ticker:
     
     # Convert free cash flow to millions and format it
     fcf_text = f"{(fcf / 1e6):,.2f}M USD" if isinstance(fcf, (int, float)) else "N/A"
-    
+
     # Define recommendations
     def get_recommendation(metric, value):
         if not isinstance(value, (int, float)):  # Handle non-numeric values
@@ -226,11 +226,8 @@ if ticker:
                 return "Buy"
             else:
                 return "Sell"
-        else:
-            return "N"
-            else:
-            return "N/A"
-
+        return "N/A"  # Default case for undefined metrics
+   
     # Prepare data for the table
     recommendation_data = [
         ["P/E Ratio", f"{pe_ratio:.2f}" if isinstance(pe_ratio, (int, float)) else "N/A", "Evaluates the stock's price relative to its earnings.", get_recommendation("P/E", pe_ratio)],
