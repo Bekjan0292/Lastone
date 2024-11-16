@@ -46,51 +46,98 @@ def main_page():
             st.session_state["stock_data"] = get_stock_data(ticker)
             st.session_state["page"] = "Technical"
 
-def stock_info_page():
-    st.title("Step 1: Company and Stock Info")
+def fundamental_analysis_page():
+    st.title("Fundamental Analysis")
 
-    # Input for stock ticker
-    ticker = st.text_input("Enter Stock Ticker (e.g., AAPL, TSLA):", "AAPL")
-    stock = yf.Ticker(ticker)
-    info = stock.info
+    if not st.session_state["stock_data"]:
+        st.warning("Please go back to the main page and enter a stock ticker.")
+        return
 
-    # Fetch real-time stock data
-    stock_data = stock.history(period="1d")
-
-    # Display stock information
-    st.header(f"{info.get('longName', 'Unknown Company')} ({ticker.upper()})")
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-        st.metric(label="Current Price", value=f"${info.get('currentPrice', 'N/A'):.2f}")
-        st.metric(label="Day's Change", value=f"{info.get('regularMarketChange', 0):.2f}",
-                  delta=f"{info.get('regularMarketChangePercent', 0):.2f}%")
-    with col2:
-        st.metric(label="Previous Close", value=f"${info.get('previousClose', 'N/A'):.2f}")
-        st.metric(label="Open", value=f"${info.get('open', 'N/A'):.2f}")
-    with col3:
-        st.metric(label="Day's Range",
-                  value=f"{info.get('dayLow', 'N/A'):.2f} - {info.get('dayHigh', 'N/A'):.2f}")
-        st.metric(label="52-Week Range",
-                  value=f"{info.get('fiftyTwoWeekLow', 'N/A'):.2f} - {info.get('fiftyTwoWeekHigh', 'N/A'):.2f}")
-
-    # Additional Metrics
-    st.subheader("Additional Information")
-    additional_metrics = {
-        "Market Cap": f"${info.get('marketCap', 'N/A'):,}",
-        "Beta (5Y Monthly)": info.get('beta', 'N/A'),
-        "PE Ratio (TTM)": info.get('trailingPE', 'N/A'),
-        "EPS (TTM)": f"${info.get('trailingEps', 'N/A'):.2f}",
-        "Volume": f"{info.get('volume', 'N/A'):,}",
-        "Forward Dividend & Yield": f"{info.get('dividendRate', 'N/A')} ({info.get('dividendYield', 'N/A'):.2%})",
-    }
-    additional_metrics_df = pd.DataFrame(additional_metrics.items(), columns=["Metric", "Value"])
-    st.table(additional_metrics_df)
+    # Retrieve data from session_state
+    info, financials, history = st.session_state["stock_data"]
 
     # Company Overview
-    st.subheader("Company Overview")
+    st.subheader(f"Company Overview: {info.get('longName', 'Unknown')} ({st.session_state['ticker']})")
     st.write(f"**Sector:** {info.get('sector', 'N/A')} | **Industry:** {info.get('industry', 'N/A')}")
-    st.write(f"**Business Summary:** {info.get('longBusinessSummary', 'N/A')}")
+    st.write(f"**Business Model:** {info.get('longBusinessSummary', 'N/A')}")
+
+    # Quantitative Analysis
+    st.subheader("Quantitative Analysis")
+
+    # Income Statement
+    st.markdown("### Income Statement")
+    try:
+        st.write("**Revenue and Net Income Trends:**")
+        financials = financials.rename(columns={"Total Revenue": "Revenue", "Net Income": "Net Income"})
+        income_data = financials[["Revenue", "Net Income"]].reset_index()
+        income_data = income_data.melt(id_vars="index", var_name="Metric", value_name="Amount")
+        fig = px.line(
+            income_data,
+            x="index",
+            y="Amount",
+            color="Metric",
+            title="Income Trends",
+            labels={"index": "Year", "Amount": "Amount (USD)", "Metric": "Metric"}
+        )
+        st.plotly_chart(fig)
+    except Exception:
+        st.warning("Unable to retrieve Income Statement data.")
+
+    # Balance Sheet Metrics
+    st.markdown("### Balance Sheet")
+    try:
+        balance_sheet_metrics = {
+            "Total Assets": info.get('totalAssets', 'N/A'),
+            "Total Liabilities": info.get('totalLiabilities', 'N/A'),
+            "Debt-to-Equity Ratio": info.get('debtToEquity', 'N/A'),
+        }
+        balance_sheet_df = pd.DataFrame(balance_sheet_metrics.items(), columns=["Metric", "Value"])
+        balance_sheet_df["Value"] = balance_sheet_df["Value"].astype(str)
+        st.table(balance_sheet_df)
+    except Exception:
+        st.warning("Unable to retrieve Balance Sheet data.")
+
+    # Cash Flow Statement
+    st.markdown("### Cash Flow Statement")
+    try:
+        cash_flow_metrics = {
+            "Cash Flow from Operations": info.get('operatingCashflow', 'N/A'),
+            "Free Cash Flow": info.get('freeCashflow', 'N/A'),
+        }
+        cash_flow_df = pd.DataFrame(cash_flow_metrics.items(), columns=["Metric", "Value"])
+        cash_flow_df["Value"] = cash_flow_df["Value"].astype(str)
+        st.table(cash_flow_df)
+    except Exception:
+        st.warning("Unable to retrieve Cash Flow data.")
+
+    # Qualitative Analysis
+    st.subheader("Qualitative Analysis")
+
+    # Competitive Advantage
+    st.markdown("### Competitive Advantage")
+    st.write(f"**Market Cap:** ${info.get('marketCap', 0):,}")
+    st.write("Evaluate the company's competitive position and potential for long-term growth.")
+
+    # Management
+    st.markdown("### Management")
+    st.write(f"**CEO:** {info.get('ceo', 'N/A')}")
+    st.write("Assess the leadership and governance structure of the company.")
+
+    # Sector Trends
+    st.markdown("### Sector Trends")
+    st.write(f"The company operates in the **{info.get('sector', 'N/A')}** sector and is part of the **{info.get('industry', 'N/A')}** industry.")
+    st.write("Analyze sector performance and how the company aligns with industry trends.")
+
+    # Recommendation
+    st.subheader("Recommendation")
+    recommendation = "Hold"
+    pe = info.get("forwardPE", None)
+    if pe:
+        if pe < 15:
+            recommendation = "Buy"
+        elif pe > 25:
+            recommendation = "Sell"
+
     fig = go.Figure(go.Indicator(
         mode="gauge+number",
         value=pe if pe else 20,
