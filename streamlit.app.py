@@ -20,7 +20,6 @@ if ticker:
     st.title(f"{info['longName']} ({ticker.upper()})")
     
     # Japanese Candlestick Chart
-    st.subheader("Price History (1 Year) - Japanese Candlesticks")
     fig = go.Figure()
     fig.add_trace(
         go.Candlestick(
@@ -33,11 +32,11 @@ if ticker:
         )
     )
     fig.update_layout(
-        title="Interactive Candlestick Chart",
         xaxis_title="Date",
         yaxis_title="Price (USD)",
         template="plotly_white",
-        hovermode="x"
+        hovermode="x",
+        showlegend=False
     )
     st.plotly_chart(fig, use_container_width=True)
     
