@@ -60,6 +60,9 @@ def fundamental_analysis():
         "52-Week Low": f"${info.get('fiftyTwoWeekLow', 'N/A')}"
     }
     metrics_df = pd.DataFrame(metrics.items(), columns=["Metric", "Value"])
+
+    # Fix mixed types in the Value column
+    metrics_df["Value"] = metrics_df["Value"].astype(str)
     st.table(metrics_df)
 
     # Interactive Revenue and Net Income Chart
