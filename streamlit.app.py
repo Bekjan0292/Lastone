@@ -55,34 +55,33 @@ if ticker:
     )
     st.plotly_chart(fig, use_container_width=True)
     
-    # Key statistics in table format
+    # Key statistics divided into two parts
     st.subheader("Key Statistics")
-    stats_data = {
-        "Metric": [
-            "Current Price", 
-            "Market Cap", 
-            "52W Range", 
-            "Previous Close", 
-            "Open", 
-            "Day's Range", 
-            "Beta", 
-            "Forward PE", 
-            "Dividend Yield"
-        ],
-        "Value": [
-            f"${info['currentPrice']:.2f}",
-            f"${info['marketCap'] / 1e9:.2f}B",
-            f"{info['fiftyTwoWeekLow']} - {info['fiftyTwoWeekHigh']}",
-            f"${info['previousClose']}",
-            f"${info['open']}",
-            f"{info['dayLow']} - {info['dayHigh']}",
-            f"{info['beta']}",
-            f"{info.get('forwardPE', 'N/A')}",
-            f"{info.get('dividendYield', 0) * 100:.2f}%"
-        ]
-    }
-    stats_df = pd.DataFrame(stats_data)
-    st.table(stats_df)
+    stats_data = [
+        ["Current Price", f"${info['currentPrice']:.2f}"],
+        ["Market Cap", f"${info['marketCap'] / 1e9:.2f}B"],
+        ["52W Range", f"{info['fiftyTwoWeekLow']} - {info['fiftyTwoWeekHigh']}"],
+        ["Previous Close", f"${info['previousClose']}"],
+        ["Open", f"${info['open']}"],
+        ["Day's Range", f"{info['dayLow']} - {info['dayHigh']}"],
+        ["Beta", f"{info['beta']}"],
+        ["Forward PE", f"{info.get('forwardPE', 'N/A')}"],
+        ["Dividend Yield", f"{info.get('dividendYield', 0) * 100:.2f}%"]
+    ]
+    
+    # Convert stats_data into two parts
+    part_1 = stats_data[:5]  # First 5 rows
+    part_2 = stats_data[5:]  # Remaining rows
+    
+    # Display Part 1
+    st.write("**Part 1:**")
+    df_part_1 = pd.DataFrame(part_1, columns=["Metric", "Value"])
+    st.table(df_part_1)
+    
+    # Display Part 2
+    st.write("**Part 2:**")
+    df_part_2 = pd.DataFrame(part_2, columns=["Metric", "Value"])
+    st.table(df_part_2)
     
     # Financial metrics
     st.subheader("Financial Analysis")
