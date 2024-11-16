@@ -86,7 +86,7 @@ if ticker:
                 x=income_data.index,
                 y=income_data["Total Revenue"],
                 name="Total Revenue",
-                marker=dict(color="blue")
+                marker=dict(color="indigo")
             )
         )
         fig.add_trace(
@@ -94,7 +94,7 @@ if ticker:
                 x=income_data.index,
                 y=income_data["Net Income"],
                 name="Net Income",
-                marker=dict(color="green")
+                marker=dict(color="orange")
             )
         )
         fig.add_trace(
@@ -102,7 +102,7 @@ if ticker:
                 x=income_data.index,
                 y=income_data["EBITDA"],
                 name="EBITDA",
-                line=dict(color="red", width=2)
+                line=dict(color="teal", width=3)
             )
         )
         fig.update_layout(
@@ -143,7 +143,7 @@ if ticker:
                 x=balance_data.index,
                 y=balance_data["Total Assets"],
                 name="Total Assets",
-                marker=dict(color="blue")
+                marker=dict(color="purple")
             )
         )
         fig.add_trace(
