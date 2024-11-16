@@ -19,20 +19,21 @@ if ticker:
     # Layout
     st.title(f"{info['longName']} ({ticker.upper()})")
     
-    # Interactive Plotly chart
-    st.subheader("Price History (1 Year)")
+    # Japanese Candlestick Chart
+    st.subheader("Price History (1 Year) - Japanese Candlesticks")
     fig = go.Figure()
     fig.add_trace(
-        go.Scatter(
-            x=historical.index, 
-            y=historical['Close'], 
-            mode='lines',
-            name='Close Price',
-            line=dict(color='blue')
+        go.Candlestick(
+            x=historical.index,
+            open=historical['Open'],
+            high=historical['High'],
+            low=historical['Low'],
+            close=historical['Close'],
+            name='Candlesticks'
         )
     )
     fig.update_layout(
-        title="Interactive Price Chart",
+        title="Interactive Candlestick Chart",
         xaxis_title="Date",
         yaxis_title="Price (USD)",
         template="plotly_white",
