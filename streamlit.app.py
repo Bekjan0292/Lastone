@@ -55,6 +55,63 @@ if ticker:
     )
     st.plotly_chart(fig, use_container_width=True)
     
+    # Income Statement Section
+    with st.expander("View Income Statement"):
+        financials = stock.financials.T
+        financials.index = pd.to_datetime(financials.index).year
+        income_data = financials[
+            ["Total Revenue", "Cost Of Revenue", "Gross Profit", "Operating Income", "Pretax Income", "Net Income"]
+        ].copy()
+        income_data.rename(columns={
+            "Total Revenue": "Total Revenue",
+            "Cost Of Revenue": "COGS",
+            "Gross Profit": "Gross Profit",
+            "Operating Income": "Operating Income",
+            "Pretax Income": "Pretax Income",
+            "Net Income": "Net Income"
+        }, inplace=True)
+        income_data["EBIT"] = income_data["Operating Income"]
+        income_data["EBITDA"] = income_data["Operating Income"] + financials.get("Depreciation", 0)
+        for col in ["Total Revenue", "COGS", "Gross Profit", "Operating Income", "Pretax Income", "Net Income", "EBIT", "EBITDA"]:
+            income_data[col] = income_data[col].div(1e6).round(2)
+        income_table = income_data.T
+        income_table = income_table.applymap(lambda x: f"{x:,.2f}" if isinstance(x, (float, int)) else x)
+        st.subheader("Income Statement (Last 5 Years, in Millions USD)")
+        st.table(income_table)
+        fig = go.Figure()
+        fig.add_trace(
+            go.Bar(
+                x=income_data.index,
+                y=income_data["Total Revenue"],
+                name="Total Revenue",
+                marker=dict(color="blue")
+            )
+        )
+        fig.add_trace(
+            go.Bar(
+                x=income_data.index,
+                y=income_data["Net Income"],
+                name="Net Income",
+                marker=dict(color="green")
+            )
+        )
+        fig.add_trace(
+            go.Scatter(
+                x=income_data.index,
+                y=income_data["EBITDA"],
+                name="EBITDA",
+                line=dict(color="red", width=2)
+            )
+        )
+        fig.update_layout(
+            title="Income Statement Metrics (Last 5 Years)",
+            xaxis=dict(title="Year"),
+            yaxis=dict(title="Amount (in millions USD)"),
+            barmode="group",
+            template="plotly_white"
+        )
+        st.plotly_chart(fig)
+    
     # Balance Sheet Section
     with st.expander("View Balance Sheet"):
         balance_sheet = stock.balance_sheet.T
