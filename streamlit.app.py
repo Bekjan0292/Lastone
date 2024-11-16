@@ -86,11 +86,15 @@ if ticker:
         # Ensure data is for the last 5 years
         income_data = income_data.tail(5).sort_index()
 
+        # Convert monetary values to millions and round to 2 decimals
+        for col in ["Total Revenue", "COGS", "Gross Profit", "Operating Income", "Pretax Income", "Net Income", "EBIT", "EBITDA"]:
+            income_data[col] = (income_data[col] / 1e6).round(2)
+
         # Transpose table: Switch rows and columns
         income_table = income_data.T
 
         # Display the table
-        st.subheader("Income Statement (Last 5 Years)")
+        st.subheader("Income Statement (Last 5 Years, in Millions USD)")
         st.table(income_table)
 
         # Plot Total Revenue, Net Income, and ROE
@@ -98,7 +102,7 @@ if ticker:
         fig.add_trace(
             go.Bar(
                 x=income_data.index,
-                y=income_data["Total Revenue"] / 1e9,  # Convert to billions
+                y=income_data["Total Revenue"],  # Already in millions
                 name="Total Revenue",
                 marker=dict(color="blue")
             )
@@ -106,7 +110,7 @@ if ticker:
         fig.add_trace(
             go.Bar(
                 x=income_data.index,
-                y=income_data["Net Income"] / 1e9,  # Convert to billions
+                y=income_data["Net Income"],  # Already in millions
                 name="Net Income",
                 marker=dict(color="green")
             )
@@ -125,7 +129,7 @@ if ticker:
         fig.update_layout(
             title="Income Statement Metrics (5 Years)",
             xaxis=dict(title="Year"),
-            yaxis=dict(title="Amount (in billions USD)", side="left"),
+            yaxis=dict(title="Amount (in millions USD)", side="left"),
             yaxis2=dict(
                 title="ROE (%)",
                 overlaying="y",
