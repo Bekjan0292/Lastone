@@ -62,7 +62,7 @@ def fundamental_analysis():
     metrics_df = pd.DataFrame(metrics.items(), columns=["Metric", "Value"])
 
     # Fix mixed types in the Value column
-    metrics_df["Value"] = metrics_df["Value"].astype(str)
+    metrics_df["Value"] = metrics_df["Value"].astype(str)  # Convert all to strings
     st.table(metrics_df)
 
     # Interactive Revenue and Net Income Chart
