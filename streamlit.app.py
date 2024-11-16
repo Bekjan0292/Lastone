@@ -57,76 +57,102 @@ def fundamental_analysis_page():
     # Retrieve data from session_state
     info, financials, history = st.session_state["stock_data"]
 
-    # Company Information
-    st.subheader(f"Company: {info.get('longName', 'Unknown')} ({st.session_state['ticker']})")
+    # Company Overview
+    st.subheader(f"Company Overview: {info.get('longName', 'Unknown')} ({st.session_state['ticker']})")
     st.write(f"**Sector:** {info.get('sector', 'N/A')} | **Industry:** {info.get('industry', 'N/A')}")
+    st.write(f"**Business Model:** {info.get('longBusinessSummary', 'N/A')}")
 
-    # Valuation Metrics
-    st.subheader("Valuation Metrics")
-    valuation_metrics = {
-        "P/E Ratio": info.get('forwardPE', 'N/A'),
-        "P/S Ratio": info.get('priceToSalesTrailing12Months', 'N/A'),
-        "P/B Ratio": info.get('priceToBook', 'N/A'),
-    }
-    valuation_df = pd.DataFrame(valuation_metrics.items(), columns=["Metric", "Value"])
-    valuation_df["Value"] = valuation_df["Value"].astype(str)
-    st.table(valuation_df)
+    # Quantitative Analysis
+    st.subheader("Quantitative Analysis")
 
-    # Profitability Metrics
-    st.subheader("Profitability Metrics")
-    profitability_metrics = {
-        "Return on Equity (ROE)": f"{info.get('returnOnEquity', 0) * 100:.2f}%",
-        "Return on Assets (ROA)": f"{info.get('returnOnAssets', 0) * 100:.2f}%",
-    }
-    profitability_df = pd.DataFrame(profitability_metrics.items(), columns=["Metric", "Value"])
-    profitability_df["Value"] = profitability_df["Value"].astype(str)
-    st.table(profitability_df)
+    # Income Statement
+    st.markdown("### Income Statement")
+    try:
+        st.write("**Revenue and Net Income Trends:**")
+        financials = financials.rename(columns={"Total Revenue": "Revenue", "Net Income": "Net Income"})
+        income_data = financials[["Revenue", "Net Income"]].reset_index()
+        income_data = income_data.melt(id_vars="index", var_name="Metric", value_name="Amount")
+        fig = px.line(
+            income_data,
+            x="index",
+            y="Amount",
+            color="Metric",
+            title="Income Trends",
+            labels={"index": "Year", "Amount": "Amount (USD)", "Metric": "Metric"}
+        )
+        st.plotly_chart(fig)
+    except Exception:
+        st.warning("Unable to retrieve Income Statement data.")
 
-    # Financial Health
-    st.subheader("Financial Health")
-    financial_health_metrics = {
-        "Debt-to-Equity Ratio": info.get('debtToEquity', 'N/A'),
-        "Current Ratio": info.get('currentRatio', 'N/A'),
-        "Quick Ratio": info.get('quickRatio', 'N/A'),
-    }
-    financial_health_df = pd.DataFrame(financial_health_metrics.items(), columns=["Metric", "Value"])
-    financial_health_df["Value"] = financial_health_df["Value"].astype(str)
-    st.table(financial_health_df)
+    # Balance Sheet Metrics
+    st.markdown("### Balance Sheet")
+    try:
+        balance_sheet_metrics = {
+            "Total Assets": info.get('totalAssets', 'N/A'),
+            "Total Liabilities": info.get('totalLiabilities', 'N/A'),
+            "Debt-to-Equity Ratio": info.get('debtToEquity', 'N/A'),
+        }
+        balance_sheet_df = pd.DataFrame(balance_sheet_metrics.items(), columns=["Metric", "Value"])
+        balance_sheet_df["Value"] = balance_sheet_df["Value"].astype(str)
+        st.table(balance_sheet_df)
+    except Exception:
+        st.warning("Unable to retrieve Balance Sheet data.")
 
-    # Growth Metrics
-    st.subheader("Growth Metrics")
-    growth_metrics = {
-        "Earnings Per Share (EPS)": info.get('trailingEps', 'N/A'),
-        "Revenue Growth (YoY)": f"{info.get('revenueGrowth', 0) * 100:.2f}%",
-    }
-    growth_df = pd.DataFrame(growth_metrics.items(), columns=["Metric", "Value"])
-    growth_df["Value"] = growth_df["Value"].astype(str)
-    st.table(growth_df)
+    # Cash Flow Statement
+    st.markdown("### Cash Flow Statement")
+    try:
+        cash_flow_metrics = {
+            "Cash Flow from Operations": info.get('operatingCashflow', 'N/A'),
+            "Free Cash Flow": info.get('freeCashflow', 'N/A'),
+        }
+        cash_flow_df = pd.DataFrame(cash_flow_metrics.items(), columns=["Metric", "Value"])
+        cash_flow_df["Value"] = cash_flow_df["Value"].astype(str)
+        st.table(cash_flow_df)
+    except Exception:
+        st.warning("Unable to retrieve Cash Flow data.")
 
-    # Dividends
-    st.subheader("Dividends")
-    dividend_metrics = {
-        "Dividend Yield": f"{info.get('dividendYield', 0) * 100:.2f}%",
-        "Dividend Payout Ratio": f"{info.get('payoutRatio', 0) * 100:.2f}%",
-    }
-    dividend_df = pd.DataFrame(dividend_metrics.items(), columns=["Metric", "Value"])
-    dividend_df["Value"] = dividend_df["Value"].astype(str)
-    st.table(dividend_df)
+    # Qualitative Analysis
+    st.subheader("Qualitative Analysis")
 
-    # Risk Indicators
-    st.subheader("Risk Indicators")
-    risk_metrics = {
-        "Beta": info.get('beta', 'N/A'),
-        "Interest Coverage Ratio": info.get('interestCoverage', 'N/A'),
-    }
-    risk_df = pd.DataFrame(risk_metrics.items(), columns=["Metric", "Value"])
-    risk_df["Value"] = risk_df["Value"].astype(str)
-    st.table(risk_df)
+    # Competitive Advantage
+    st.markdown("### Competitive Advantage")
+    st.write(f"**Market Cap:** ${info.get('marketCap', 0):,}")
+    st.write("Evaluate the company's competitive position and potential for long-term growth.")
+
+    # Management
+    st.markdown("### Management")
+    st.write(f"**CEO:** {info.get('ceo', 'N/A')}")
+    st.write("Assess the leadership and governance structure of the company.")
+
+    # Sector Trends
+    st.markdown("### Sector Trends")
+    st.write(f"The company operates in the **{info.get('sector', 'N/A')}** sector and is part of the **{info.get('industry', 'N/A')}** industry.")
+    st.write("Analyze sector performance and how the company aligns with industry trends.")
+
+    # Recommendation
+    st.subheader("Recommendation")
+    recommendation = "Hold"
+    pe = info.get("forwardPE", None)
+    if pe:
+        if pe < 15:
+            recommendation = "Buy"
+        elif pe > 25:
+            recommendation = "Sell"
+
+    fig = go.Figure(go.Indicator(
+        mode="gauge+number",
+        value=pe if pe else 20,
+        title={"text": f"P/E Ratio ({recommendation})"},
+        gauge={
+            "axis": {"range": [0, 40]},
+            "bar": {"color": "green" if recommendation == "Buy" else "red" if recommendation == "Sell" else "yellow"}
+        }
+    ))
+    st.plotly_chart(fig)
 
     # Back button
     if st.button("Back to Main Page"):
         st.session_state["page"] = "Main"
-
 # Technical Analysis Page (Placeholder)
 def technical_analysis_page():
     st.title("Technical Analysis")
