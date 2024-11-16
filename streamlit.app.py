@@ -228,7 +228,7 @@ if ticker:
                 return "Sell"
         else:
             return "N"
-        else:
+            else:
             return "N/A"
 
     # Prepare data for the table
