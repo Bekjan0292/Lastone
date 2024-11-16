@@ -1,6 +1,8 @@
 import streamlit as st
 import yfinance as yf
 import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
 
 # Set up page configuration
 st.set_page_config(
@@ -48,7 +50,7 @@ def fundamental_analysis():
     st.markdown(f"**Sector**: {info.get('sector', 'N/A')}")
     st.markdown(f"**Industry**: {info.get('industry', 'N/A')}")
 
-    # Metrics Overview
+    # Financial Metrics
     st.subheader("Key Financial Metrics")
     metrics = {
         "Market Cap": f"${info.get('marketCap', 0):,}",
@@ -60,36 +62,80 @@ def fundamental_analysis():
     metrics_df = pd.DataFrame(metrics.items(), columns=["Metric", "Value"])
     st.table(metrics_df)
 
-    # Financial History Chart
-    st.subheader("Revenue and Net Income (Last 5 Years)")
+    # Interactive Revenue and Net Income Chart
+    st.subheader("Revenue and Net Income (Interactive)")
     try:
         financials = stock.financials.T
-        income_statement = financials[["Total Revenue", "Net Income"]]
-        st.line_chart(income_statement)
+        financials = financials.rename(columns={
+            "Total Revenue": "Revenue",
+            "Net Income": "Net Income"
+        })
+        chart_data = financials[["Revenue", "Net Income"]].reset_index()
+        chart_data = chart_data.melt(id_vars="index", var_name="Metric", value_name="Amount")
+
+        fig = px.line(
+            chart_data,
+            x="index",
+            y="Amount",
+            color="Metric",
+            title="Revenue and Net Income Trends",
+            labels={"index": "Year", "Amount": "Amount (USD)", "Metric": "Metric"}
+        )
+        st.plotly_chart(fig)
     except Exception:
         st.warning("Unable to fetch financial history data.")
 
-    # Valuation Ratios Comparison
-    st.subheader("Valuation Ratios Comparison")
-    ratios = {
-        "Current PE Ratio": info.get('forwardPE', 0),
-        "Price-to-Book Ratio": info.get('priceToBook', 'N/A'),
-        "PEG Ratio": info.get('pegRatio', 'N/A')
-    }
-    ratios_df = pd.DataFrame(ratios.items(), columns=["Ratio", "Value"])
-    st.table(ratios_df)
+    # Interactive Historical Stock Price Chart
+    st.subheader("Historical Stock Price")
+    try:
+        history = stock.history(period="5y")
+        fig = px.line(
+            history.reset_index(),
+            x="Date",
+            y="Close",
+            title="Stock Price Over the Last 5 Years",
+            labels={"Date": "Date", "Close": "Closing Price (USD)"}
+        )
+        st.plotly_chart(fig)
+    except Exception:
+        st.warning("Unable to fetch historical stock price data.")
 
-    # Recommendation Logic
+    # PE Ratio Visualization
+    st.subheader("PE Ratio Comparison")
+    try:
+        pe_ratio = info.get("forwardPE", None)
+        peer_pe_ratios = [10, 15, 20, 25, 30, 35]  # Example peer data
+        fig = px.box(
+            peer_pe_ratios,
+            points="all",
+            title="PE Ratio Distribution Among Peers",
+            labels={"value": "PE Ratio"}
+        )
+        fig.add_trace(go.Scatter(x=[0], y=[pe_ratio], mode="markers", name="Company PE", marker=dict(size=12, color="red")))
+        st.plotly_chart(fig)
+    except Exception:
+        st.warning("Unable to visualize PE Ratio.")
+
+    # Recommendation Visualization
     st.subheader("Recommendation")
     recommendation = "Hold"
-    if info.get("forwardPE", None):
-        pe = info["forwardPE"]
+    pe = info.get("forwardPE", None)
+    if pe:
         if pe < 15:
             recommendation = "Buy"
         elif pe > 25:
             recommendation = "Sell"
 
-    st.markdown(f"### **Recommendation: {recommendation}**")
+    fig = go.Figure(go.Indicator(
+        mode="gauge+number",
+        value=pe if pe else 20,
+        title={"text": f"PE Ratio ({recommendation})"},
+        gauge={
+            "axis": {"range": [0, 40]},
+            "bar": {"color": "green" if recommendation == "Buy" else "red" if recommendation == "Sell" else "yellow"}
+        }
+    ))
+    st.plotly_chart(fig)
 
     # Navigation
     if st.button("Back to Start"):
