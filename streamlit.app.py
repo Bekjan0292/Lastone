@@ -70,9 +70,12 @@ if ticker:
         ["EPS", f"{info.get('trailingEps', 'N/A'):.2f}" if info.get('trailingEps') else "N/A", "Earnings per share, showing profit allocated to each outstanding share."]
     ]
     
-    # Create a DataFrame for better display
+    # Create a DataFrame without row numeration
     stats_df = pd.DataFrame(stats_data, columns=["Metric", "Value", "Explanation"])
-    st.table(stats_df)
+    st.markdown(
+        stats_df.to_html(index=False, escape=False),  # index=False removes row numeration
+        unsafe_allow_html=True
+    )
     
     # Financial metrics
     st.subheader("Financial Analysis")
