@@ -55,85 +55,24 @@ if ticker:
     )
     st.plotly_chart(fig, use_container_width=True)
     
-    # Income Statement Section
-    with st.expander("View Income Statement"):
-        # Fetch financial data
-        financials = stock.financials.T
-        financials.index = pd.to_datetime(financials.index).year  # Convert to year format
-        
-        # Select relevant metrics and prepare data
-        income_data = financials[
-            ["Total Revenue", "Cost Of Revenue", "Gross Profit", "Operating Income",
-             "Pretax Income", "Net Income"]
-        ].copy()
-        income_data.rename(columns={
-            "Total Revenue": "Total Revenue",
-            "Cost Of Revenue": "COGS",
-            "Gross Profit": "Gross Profit",
-            "Operating Income": "Operating Income",
-            "Pretax Income": "Pretax Income",
-            "Net Income": "Net Income"
-        }, inplace=True)
-        income_data["EBIT"] = income_data["Operating Income"]
-        income_data["EBITDA"] = income_data["Operating Income"] + financials.get("Depreciation", 0)
-        
-        # Ensure data is for the last 5 years
-        income_data = income_data.tail(5).sort_index()
-
-        # Add mock ROE data (replace with real calculation if available)
-        income_data["ROE"] = [48.23, 45.61, 42.11, 38.95, 35.12]  # Placeholder values
-
-        # Graph for Net Income, Total Revenue, and ROE
-        fig = go.Figure()
-        fig.add_trace(
-            go.Bar(
-                x=income_data.index,
-                y=income_data["Net Income"] / 1e9,  # Convert to billions
-                name="Net Income",
-                marker=dict(color="blue"),
-                yaxis="y1"
-            )
-        )
-        fig.add_trace(
-            go.Bar(
-                x=income_data.index,
-                y=income_data["Total Revenue"] / 1e9,  # Convert to billions
-                name="Total Revenue",
-                marker=dict(color="green"),
-                yaxis="y1"
-            )
-        )
-        fig.add_trace(
-            go.Scatter(
-                x=income_data.index,
-                y=income_data["ROE"],
-                name="ROE (%)",
-                line=dict(color="red", width=2),
-                yaxis="y2"
-            )
-        )
-
-        # Configure the layout
-        fig.update_layout(
-            title="Income Statement Metrics (5 Years)",
-            xaxis=dict(title="Year"),
-            yaxis=dict(title="Amount (in billions USD)", side="left"),
-            yaxis2=dict(
-                title="ROE (%)",
-                overlaying="y",
-                side="right",
-                showgrid=False
-            ),
-            legend=dict(x=0.01, y=0.99),
-            barmode="group",
-            template="plotly_white"
-        )
-        st.plotly_chart(fig)
-
-        # Transpose table: Switch rows and columns
-        st.subheader("Detailed Income Statement")
-        income_table = income_data.T
-        st.table(income_table)
+    # Key Statistics Section
+    st.subheader("Key Statistics")
+    stats_data = [
+        ["Current Price", f"${info['currentPrice']:.2f}", "The current trading price of the stock."],
+        ["Market Cap", f"${info['marketCap'] / 1e9:,.2f}B", "The total value of the company based on its stock price and shares outstanding."],
+        ["52W Range", f"{info['fiftyTwoWeekLow']:.2f} - {info['fiftyTwoWeekHigh']:.2f}", "The range of the stock price over the last 52 weeks."],
+        ["Previous Close", f"${info['previousClose']:.2f}", "The last recorded closing price of the stock."],
+        ["Open", f"${info['open']:.2f}", "The stock price at the start of the trading session."],
+        ["Day's Range", f"{info['dayLow']:.2f} - {info['dayHigh']:.2f}", "The lowest and highest price during today's trading session."],
+        ["Beta", f"{info['beta']:.2f}", "A measure of the stock's volatility compared to the overall market."],
+        ["P/E Ratio", f"{info.get('trailingPE', 'N/A'):.2f}" if info.get('trailingPE') else "N/A", "The price-to-earnings ratio, showing the price relative to earnings per share."],
+        ["P/B Ratio", f"{info.get('priceToBook', 'N/A'):.2f}" if info.get('priceToBook') else "N/A", "The price-to-book ratio, showing the price relative to book value per share."],
+        ["EPS", f"{info.get('trailingEps', 'N/A'):.2f}" if info.get('trailingEps') else "N/A", "Earnings per share, showing profit allocated to each outstanding share."]
+    ]
+    
+    # Create a DataFrame for the statistics table
+    stats_df = pd.DataFrame(stats_data, columns=["Metric", "Value", "Explanation"])
+    st.table(stats_df)
 
 else:
     st.warning("Please enter a valid ticker symbol.")
