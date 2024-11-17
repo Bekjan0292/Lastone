@@ -243,6 +243,3 @@ recommendation_data = [
 # Convert to DataFrame and display
 recommendation_df = pd.DataFrame(recommendation_data)
 st.table(recommendation_df)
-
-else:
-    st.warning("Please enter a valid ticker symbol.")
