@@ -239,7 +239,7 @@ recommendation_data = [
         "Recommendation": "Buy" if de_ratio < 0.5 else "Hold" if 0.5 <= de_ratio <= 1 else "Sell"
     },
     {
-        "Metric": "Free Cash Flow (FCF)",
+        "Metric": "FCF",
         "Current Value": fcf_text,
         "Industry Current Value": industry_fcf,  # Replace if numeric
         "Explanation": "Free Cash Flow (FCF) measures the cash a company generates after accounting for capital expenditures. "
