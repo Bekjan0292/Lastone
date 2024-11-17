@@ -75,42 +75,55 @@ if go_button and ticker:
     stats_df = pd.DataFrame(stats_data, columns=["Metric", "Value", "Explanation"])
     st.table(stats_df)
     
+    # Income Statement Section
+    if st.button("View Income Statement"):
+        st.subheader("Income Statement (Last 4 Years, in Millions USD)")
+        financials = stock.financials.T
+        balance_sheet = stock.balance_sheet.T
 
-    st.subheader("Income Statement (Last 4 Years, in Millions USD)")
-    financials = stock.financials.T
-    balance_sheet = stock.balance_sheet.T
-    if financials.empty or balance_sheet.empty:
-        st.error("Financial or balance sheet data is not available for the selected stock.")
-    else:
-        financials.index = pd.to_datetime(financials.index).year
-        balance_sheet.index = pd.to_datetime(balance_sheet.index).year
-        financials = financials[financials.index != 2019].sort_index(ascending=False).head(4)  # Exclude 2019
-        balance_sheet = balance_sheet[balance_sheet.index != 2019].sort_index(ascending=False).head(4)  # Exclude 2019
-        total_assets = balance_sheet["Total Assets"]
-        total_equity = balance_sheet["Total Equity Gross Minority Interest"]
-        net_income = financials["Net Income"]
-        roa = (net_income / total_assets * 100).round(2)
-        roe = (net_income / total_equity * 100).round(2)
-        income_data = financials[
-        ["Total Revenue", "Cost Of Revenue", "Gross Profit", "Operating Income", "Pretax Income", "Net Income"]
-        ].copy()
-        income_data.rename(columns={
-            "Total Revenue": "Total Revenue",
-            "Cost Of Revenue": "COGS",
-            "Gross Profit": "Gross Profit",
-            "Operating Income": "Operating Income",
-            "Pretax Income": "Pretax Income",
-            "Net Income": "Net Income"
-        }, inplace=True)
-        income_data["ROA (%)"] = roa
-        income_data["ROE (%)"] = roe
-        for col in ["Total Revenue", "COGS", "Gross Profit", "Operating Income", "Pretax Income", "Net Income"]:
-            income_data[col] = income_data[col].div(1e6).round(2)
+        # Check for missing or empty data
+        if financials.empty or balance_sheet.empty:
+            st.error("Financial or balance sheet data is not available for the selected stock.")
+        else:
+            # Convert index to years and sort
+            financials.index = pd.to_datetime(financials.index).year
+            balance_sheet.index = pd.to_datetime(balance_sheet.index).year
+            financials = financials[financials.index != 2019].sort_index(ascending=False).head(4)  # Exclude 2019
+            balance_sheet = balance_sheet[balance_sheet.index != 2019].sort_index(ascending=False).head(4)  # Exclude 2019
+            
+            # Extract required metrics
+            total_assets = balance_sheet["Total Assets"]
+            total_equity = balance_sheet["Total Equity Gross Minority Interest"]
+            net_income = financials["Net Income"]
+
+            # Calculate ROA and ROE
+            roa = (net_income / total_assets * 100).round(2)
+            roe = (net_income / total_equity * 100).round(2)
+
+            income_data = financials[
+                ["Total Revenue", "Cost Of Revenue", "Gross Profit", "Operating Income", "Pretax Income", "Net Income"]
+            ].copy()
+            income_data.rename(columns={
+                "Total Revenue": "Total Revenue",
+                "Cost Of Revenue": "COGS",
+                "Gross Profit": "Gross Profit",
+                "Operating Income": "Operating Income",
+                "Pretax Income": "Pretax Income",
+                "Net Income": "Net Income"
+            }, inplace=True)
+            income_data["ROA (%)"] = roa
+            income_data["ROE (%)"] = roe
+
+            for col in ["Total Revenue", "COGS", "Gross Profit", "Operating Income", "Pretax Income", "Net Income"]:
+                income_data[col] = income_data[col].div(1e6).round(2)
+            
             income_table = income_data.T
             income_table = income_table.applymap(lambda x: f"{x:,.2f}" if isinstance(x, (float, int)) else x)
             st.table(income_table)
+            
             # Income Statement Graph with Dual Axes
             fig = go.Figure()
+
             # Add Total Revenue (Left Axis)
             fig.add_trace(
                 go.Bar(
@@ -121,6 +134,7 @@ if go_button and ticker:
                     yaxis="y1"
                 )
             )
+
             # Add Net Income (Left Axis)
             fig.add_trace(
                 go.Bar(
@@ -131,6 +145,7 @@ if go_button and ticker:
                     yaxis="y1"
                 )
             )
+
             # Add ROE (Right Axis)
             fig.add_trace(
                 go.Scatter(
@@ -141,6 +156,7 @@ if go_button and ticker:
                     yaxis="y2"
                 )
             )
+
             # Update Layout for Dual Axes
             fig.update_layout(
                 title="Income Statement Metrics (Last 4 Years)",
@@ -162,66 +178,141 @@ if go_button and ticker:
                 template="plotly_white"
             )
             st.plotly_chart(fig)
-            
-    # Recommendation Section
-    st.subheader("Recommendation")
-    pe_ratio = info.get("trailingPE", "N/A")
-    pb_ratio = info.get("priceToBook", "N/A")
-    de_ratio = info.get("debtToEquity", "N/A")
-    fcf = info.get("freeCashflow", "N/A")
+    
+    # Balance Sheet Section
+    if st.button("View Balance Sheet"):
+        st.subheader("Balance Sheet (Last 4 Years, in Millions USD)")
 
-     # Placeholder for industry values (replace with actual data)
-    industry_pe = 20  # Example value for Industry P/E
-    industry_pb = 2.5  # Example value for Industry P/B
-    industry_de = 0.7  # Example value for Industry D/E
-    industry_fcf = "Positive"  # Example for Industry FCF (replace if numeric)
+        # Fetch balance sheet data
+        balance_sheet = stock.balance_sheet.T  # Transpose for easier row handling
+        if balance_sheet.empty:
+            st.error("Balance sheet data is not available for the selected stock.")
+        else:
+            # Convert index to years
+            balance_sheet.index = pd.to_datetime(balance_sheet.index).year
 
-    # Convert free cash flow to millions and format it
-    fcf_text = f"{(fcf / 1e6):,.2f}M USD" if isinstance(fcf, (int, float)) else "N/A"
+            # Remove 2019 and keep only the last 4 years
+            balance_sheet = balance_sheet.sort_index(ascending=False).head(4)
 
-    # Define recommendations with explanations, pros, and cons
-    recommendation_data = [
-        {
-            "Metric": "P/E Ratio",
-            "Current Value": f"{pe_ratio:.2f}" if isinstance(pe_ratio, (int, float)) else "N/A",
-            "Industry Current Value": f"{industry_pe:.2f}" if isinstance(industry_pe, (int, float)) else "N/A",
-            "Explanation": "The Price-to-Earnings (P/E) Ratio measures the stock price relative to its earnings. "
-            "A lower P/E indicates better value compared to earnings, but it can vary by industry.",
-            "Pros": "Widely used; allows easy comparison with industry averages.", 
-            "Cons": "May be misleading for low-earning or high-growth companies.",
-            "Recommendation": "Buy" if pe_ratio < 15 else "Hold" if 15 <= pe_ratio <= 25 else "Sell"
-        },
-        {
-            "Metric": "P/B Ratio",
-            "Current Value": f"{pb_ratio:.2f}" if isinstance(pb_ratio, (int, float)) else "N/A",
-            "Industry Current Value": f"{industry_pb:.2f}" if isinstance(industry_pb, (int, float)) else "N/A",
-            "Explanation": "The Price-to-Book (P/B) Ratio compares the stock price to the book value of the company. "
-            "Useful for determining undervalued or overvalued stocks in asset-heavy industries.",
-            "Pros": "Effective for asset-heavy industries like real estate or manufacturing.",
-            "Cons": "Less relevant for service-oriented or tech companies.",
-            "Recommendation": "Buy" if pb_ratio < 1 else "Hold" if 1 <= pb_ratio <= 3 else "Sell"
-        },
-        {
-            "Metric": "D/E Ratio",
-            "Current Value": f"{de_ratio:.2f}" if isinstance(de_ratio, (int, float)) else "N/A",
-            "Industry Current Value": f"{industry_de:.2f}" if isinstance(industry_de, (int, float)) else "N/A",
-            "Explanation": "The Debt-to-Equity (D/E) Ratio evaluates a company's financial leverage by comparing its total debt "
-            "to shareholders' equity. A lower ratio indicates less financial risk.",
-            "Pros": "Highlights the financial stability and leverage of the company.",
-            "Cons": "Varies significantly by industry; may not always reflect operational risk.",
-            "Recommendation": "Buy" if de_ratio < 0.5 else "Hold" if 0.5 <= de_ratio <= 1 else "Sell"
-        },
-        {
-            "Metric": "Free Cash Flow (FCF)",
-            "Current Value": fcf_text,
-            "Industry Current Value": industry_fcf,  # Replace if numeric
-            "Explanation": "Free Cash Flow (FCF) measures the cash a company generates after accounting for capital expenditures. "
-            "It reflects financial health and ability to fund growth or return value to shareholders.",
-            "Pros": "Indicates financial health and growth potential.",
-            "Cons": "Can fluctuate significantly year to year, especially in cyclical industries.",
-            "Recommendation": "Buy" if isinstance(fcf, (int, float)) and fcf > 0 else "Sell"
-        }
-        ]
-    # Convert to DataFrame and display
-    recommendation_df = pd.DataFrame(recommendation_data)
-    st.table(recommendation_df)
+            # Extract key metrics
+            balance_data = balance_sheet[
+                ["Total Assets", "Total Liabilities Net Minority Interest", "Total Equity Gross Minority Interest"]
+            ].copy()
+            balance_data.rename(columns={
+                "Total Assets": "Total Assets",
+                "Total Liabilities Net Minority Interest": "Total Liabilities",
+                "Total Equity Gross Minority Interest": "Total Equity"
+            }, inplace=True)
+
+            # Add derived metrics
+            balance_data["Cash"] = balance_sheet.get("Cash And Cash Equivalents", 0)
+            balance_data["Debt"] = balance_sheet.get("Short Long Term Debt Total", 0)
+            balance_data["Working Capital"] = balance_data["Total Assets"] - balance_data["Total Liabilities"]
+
+            # Format data
+            for col in ["Total Assets", "Total Liabilities", "Total Equity", "Cash", "Debt", "Working Capital"]:
+                balance_data[col] = balance_data[col].div(1e6).round(2)
+
+            # Display table
+            balance_table = balance_data.T
+            balance_table = balance_table.applymap(lambda x: f"{x:,.2f}" if isinstance(x, (float, int)) else x)
+            st.table(balance_table)
+
+            # Plot Balance Sheet Metrics
+            fig = go.Figure()
+            fig.add_trace(
+                go.Bar(
+                    x=balance_data.index.astype(str),
+                    y=balance_data["Total Assets"],
+                    name="Total Assets",
+                    marker=dict(color="purple")
+                )
+            )
+            fig.add_trace(
+                go.Bar(
+                    x=balance_data.index.astype(str),
+                    y=balance_data["Total Liabilities"],
+                    name="Total Liabilities",
+                    marker=dict(color="red")
+                )
+            )
+            fig.add_trace(
+                go.Bar(
+                    x=balance_data.index.astype(str),
+                    y=balance_data["Total Equity"],
+                    name="Total Equity",
+                    marker=dict(color="green")
+                )
+            )
+            fig.update_layout(
+                title="Balance Sheet Metrics (Last 4 Years)",
+                xaxis=dict(title="Year", type="category"),
+                yaxis=dict(title="Amount (in millions USD)"),
+                barmode="group",
+                template="plotly_white"
+            )
+            st.plotly_chart(fig)
+
+# Recommendation Section
+st.subheader("Recommendation")
+pe_ratio = info.get("trailingPE", "N/A")
+pb_ratio = info.get("priceToBook", "N/A")
+de_ratio = info.get("debtToEquity", "N/A")
+fcf = info.get("freeCashflow", "N/A")
+
+# Placeholder for industry values (replace with actual data)
+industry_pe = 20  # Example value for Industry P/E
+industry_pb = 2.5  # Example value for Industry P/B
+industry_de = 0.7  # Example value for Industry D/E
+industry_fcf = "Positive"  # Example for Industry FCF (replace if numeric)
+
+# Convert free cash flow to millions and format it
+fcf_text = f"{(fcf / 1e6):,.2f}M USD" if isinstance(fcf, (int, float)) else "N/A"
+
+# Define recommendations with explanations, pros, and cons
+recommendation_data = [
+    {
+        "Metric": "P/E Ratio",
+        "Current Value": f"{pe_ratio:.2f}" if isinstance(pe_ratio, (int, float)) else "N/A",
+        "Industry Current Value": f"{industry_pe:.2f}" if isinstance(industry_pe, (int, float)) else "N/A",
+        "Explanation": "The Price-to-Earnings (P/E) Ratio measures the stock price relative to its earnings. "
+                       "A lower P/E indicates better value compared to earnings, but it can vary by industry.",
+        "Pros": "Widely used; allows easy comparison with industry averages.",
+        "Cons": "May be misleading for low-earning or high-growth companies.",
+        "Recommendation": "Buy" if pe_ratio < 15 else "Hold" if 15 <= pe_ratio <= 25 else "Sell"
+    },
+    {
+        "Metric": "P/B Ratio",
+        "Current Value": f"{pb_ratio:.2f}" if isinstance(pb_ratio, (int, float)) else "N/A",
+        "Industry Current Value": f"{industry_pb:.2f}" if isinstance(industry_pb, (int, float)) else "N/A",
+        "Explanation": "The Price-to-Book (P/B) Ratio compares the stock price to the book value of the company. "
+                       "Useful for determining undervalued or overvalued stocks in asset-heavy industries.",
+        "Pros": "Effective for asset-heavy industries like real estate or manufacturing.",
+        "Cons": "Less relevant for service-oriented or tech companies.",
+        "Recommendation": "Buy" if pb_ratio < 1 else "Hold" if 1 <= pb_ratio <= 3 else "Sell"
+    },
+    {
+        "Metric": "D/E Ratio",
+        "Current Value": f"{de_ratio:.2f}" if isinstance(de_ratio, (int, float)) else "N/A",
+        "Industry Current Value": f"{industry_de:.2f}" if isinstance(industry_de, (int, float)) else "N/A",
+        "Explanation": "The Debt-to-Equity (D/E) Ratio evaluates a company's financial leverage by comparing its total debt "
+                       "to shareholders' equity. A lower ratio indicates less financial risk.",
+        "Pros": "Highlights the financial stability and leverage of the company.",
+        "Cons": "Varies significantly by industry; may not always reflect operational risk.",
+        "Recommendation": "Buy" if de_ratio < 0.5 else "Hold" if 0.5 <= de_ratio <= 1 else "Sell"
+    },
+    {
+        "Metric": "Free Cash Flow (FCF)",
+        "Current Value": fcf_text,
+        "Industry Current Value": industry_fcf,  # Replace if numeric
+        "Explanation": "Free Cash Flow (FCF) measures the cash a company generates after accounting for capital expenditures. "
+                       "It reflects financial health and ability to fund growth or return value to shareholders.",
+        "Pros": "Indicates financial health and growth potential.",
+        "Cons": "Can fluctuate significantly year to year, especially in cyclical industries.",
+        "Recommendation": "Buy" if isinstance(fcf, (int, float)) and fcf > 0 else "Sell"
+    }
+]
+
+# Convert to DataFrame and display
+recommendation_df = pd.DataFrame(recommendation_data)
+st.table(recommendation_df)
