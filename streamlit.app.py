@@ -212,8 +212,8 @@ recommendation_data = [
         "Metric": "P/E Ratio",
         "Current Value": f"{pe_ratio:.2f}" if isinstance(pe_ratio, (int, float)) else "N/A",
         "Industry Current Value": f"{industry_pe:.2f}" if isinstance(industry_pe, (int, float)) else "N/A",
-        "Explanation": "The Price-to-Earnings (P/E) Ratio measures the stock price relative to its earnings"
-                       "A lower P/E indicates better value compared to earnings, but it can vary by industry",
+        "Explanation": "The Price-to-Earnings Ratio measures the stock price relative to its earnings. "
+                       "A lower P/E indicates better value compared to earnings, but it can vary by industry.",
         "Pros": "Allows easy comparison with industry averages",
         "Cons": "May be misleading for low-earning or high-growth companies",
         "Recommendation": "Buy" if pe_ratio < 15 else "Hold" if 15 <= pe_ratio <= 25 else "Sell"
@@ -222,7 +222,7 @@ recommendation_data = [
         "Metric": "P/B Ratio",
         "Current Value": f"{pb_ratio:.2f}" if isinstance(pb_ratio, (int, float)) else "N/A",
         "Industry Current Value": f"{industry_pb:.2f}" if isinstance(industry_pb, (int, float)) else "N/A",
-        "Explanation": "The P/B ratio compares the stock price to the book value of the company"
+        "Explanation": "The P/B ratio compares the stock price to the book value of the company. "
                        "Useful for determining undervalued or overvalued stocks in asset-heavy industries",
         "Pros": "Effective for asset-heavy industries like real estate or manufacturing",
         "Cons": "Less relevant for service-oriented or tech companies",
@@ -232,7 +232,7 @@ recommendation_data = [
         "Metric": "D/E Ratio",
         "Current Value": f"{de_ratio:.2f}" if isinstance(de_ratio, (int, float)) else "N/A",
         "Industry Current Value": f"{industry_de:.2f}" if isinstance(industry_de, (int, float)) else "N/A",
-        "Explanation": "The Debt-to-Equity (D/E) Ratio evaluates a company's financial leverage by comparing its total debt."
+        "Explanation": "The Debt-to-Equity (D/E) Ratio evaluates a company's financial leverage by comparing its total debt. "
                        "A lower ratio indicates less risk",
         "Pros": "Highlights the financial stability and leverage of the company",
         "Cons": "Varies significantly by industry; may not always reflect operational risk",
