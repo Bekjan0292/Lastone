@@ -85,7 +85,7 @@ for col in ["Total Revenue", "COGS", "Gross Profit", "Operating Income", "Pretax
 income_table = income_data.T
 income_table = income_table.applymap(lambda x: f"{x:,.2f}" if isinstance(x, (float, int)) else x)
 st.table(income_table)
-    if st.button("View Income Statement"):
+        if st.button("View Income Statement"):
         st.subheader("Income Statement (Last 4 Years, in Millions USD)")
         financials = stock.financials.T
         balance_sheet = stock.balance_sheet.T
