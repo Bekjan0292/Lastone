@@ -382,5 +382,5 @@ recommendation_df = pd.DataFrame(recommendation_data, columns=["Metric", "Curren
 # Display the Recommendation Table
 st.table(recommendation_df)
 
-else:
-    st.warning("Please enter a valid ticker symbol.")
+    else:
+        st.warning("Please enter a valid ticker symbol.")
