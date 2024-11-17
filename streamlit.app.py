@@ -55,113 +55,69 @@ if ticker:
     )
     st.plotly_chart(fig, use_container_width=True)
     
-    # Key statistics with explanations
+    # Key Metrics Table
     st.subheader("Key Statistics")
-    stats_data = [
-        ["Current Price", f"${info['currentPrice']:.2f}", "The current trading price of the stock."],
-        ["Market Cap", f"${info['marketCap'] / 1e9:,.2f}B", "The total value of the company based on its stock price and shares outstanding."],
-        ["52W Range", f"{info['fiftyTwoWeekLow']:.2f} - {info['fiftyTwoWeekHigh']:.2f}", "The range of the stock price over the last 52 weeks."],
-        ["Previous Close", f"${info['previousClose']:.2f}", "The last recorded closing price of the stock."],
-        ["Open", f"${info['open']:.2f}", "The stock price at the start of the trading session."],
-        ["Day's Range", f"{info['dayLow']:.2f} - {info['dayHigh']:.2f}", "The lowest and highest price during today's trading session."],
-        ["Beta", f"{info['beta']:.2f}", "A measure of the stock's volatility compared to the overall market."],
-        ["P/E Ratio", f"{info.get('trailingPE', 'N/A'):.2f}" if info.get('trailingPE') else "N/A", "The price-to-earnings ratio, showing the price relative to earnings per share."],
-        ["P/B Ratio", f"{info.get('priceToBook', 'N/A'):.2f}" if info.get('priceToBook') else "N/A", "The price-to-book ratio, showing the price relative to book value per share."],
-        ["EPS", f"{info.get('trailingEps', 'N/A'):.2f}" if info.get('trailingEps') else "N/A", "Earnings per share, showing profit allocated to each outstanding share."]
-    ]
-    
-    # Create a DataFrame for better display
-    stats_df = pd.DataFrame(stats_data, columns=["Metric", "Value", "Explanation"])
-    st.table(stats_df)
-    
-# Income Statement Section
-if st.button("View Income Statement"):
-    st.subheader("Income Statement (Last 4 Years, in Millions USD)")
-    financials = stock.financials.T
-    balance_sheet = stock.balance_sheet.T
-
-    # Check for missing or empty data
-    if financials.empty or balance_sheet.empty:
-        st.error("Financial or balance sheet data is not available for the selected stock.")
-    else:
-        # Convert index to years and sort
-        financials.index = pd.to_datetime(financials.index).year
-        balance_sheet.index = pd.to_datetime(balance_sheet.index).year
-        financials = financials[financials.index != 2019].sort_index(ascending=False).head(4)
-        
-        # Extract required metrics
-        income_data = financials[
-            ["Total Revenue", "Cost Of Revenue", "Gross Profit", "Operating Income", "Pretax Income", "Net Income"]
-        ].copy()
-        income_data.rename(columns={
-            "Total Revenue": "Total Revenue",
-            "Cost Of Revenue": "COGS",
-            "Gross Profit": "Gross Profit",
-            "Operating Income": "Operating Income",
-            "Pretax Income": "Pretax Income",
-            "Net Income": "Net Income"
-        }, inplace=True)
-        
-        # Add Profit Margin
-        income_data["Profit Margin (%)"] = (income_data["Net Income"] / income_data["Total Revenue"] * 100).round(2)
-        
-        # Convert numeric columns to millions where appropriate
-        for col in ["Total Revenue", "COGS", "Gross Profit", "Operating Income", "Pretax Income", "Net Income"]:
-            income_data[col] = income_data[col].div(1e6).round(2)
-        
-        # Display Income Statement Table
-        income_table = income_data.T
-        income_table = income_table.applymap(lambda x: f"{x:,.2f}" if isinstance(x, (float, int)) else x)
-        st.table(income_table)
-
-# Recommendation Section
-st.subheader("Recommendation")
-pe_ratio = info.get("trailingPE", "N/A")
-pb_ratio = info.get("priceToBook", "N/A")
-de_ratio = info.get("debtToEquity", "N/A")
-fcf = info.get("freeCashflow", "N/A")
-
-# Convert free cash flow to millions and format it
-fcf_text = f"{(fcf / 1e6):,.2f}M USD" if isinstance(fcf, (int, float)) else "N/A"
-
-# Define recommendations with pros, cons, and thresholds
-recommendation_data = [
-    {
-        "Metric": "P/E Ratio",
-        "Current Value": f"{pe_ratio:.2f}" if isinstance(pe_ratio, (int, float)) else "N/A",
-        "Pros": "Widely used; easy comparison with industry.",
-        "Cons": "May be misleading for low-earning companies.",
-        "Threshold": "Below 15: Buy; 15-25: Hold; Above 25: Sell"
-    },
-    {
-        "Metric": "P/B Ratio",
-        "Current Value": f"{pb_ratio:.2f}" if isinstance(pb_ratio, (int, float)) else "N/A",
-        "Pros": "Useful for asset-heavy industries.",
-        "Cons": "Less relevant for tech or service companies.",
-        "Threshold": "Below 1: Buy; 1-3: Hold; Above 3: Sell"
-    },
-    {
-        "Metric": "D/E Ratio",
-        "Current Value": f"{de_ratio:.2f}" if isinstance(de_ratio, (int, float)) else "N/A",
-        "Pros": "Indicates financial leverage and risk.",
-        "Cons": "Varies significantly by industry.",
-        "Threshold": "Below 0.5: Buy; 0.5-1: Hold; Above 1: Sell"
-    },
-    {
-        "Metric": "Free Cash Flow (FCF)",
-        "Current Value": fcf_text,
-        "Pros": "Indicates financial health and growth potential.",
-        "Cons": "Can fluctuate significantly year to year.",
-        "Threshold": "Positive: Buy; Negative: Sell"
+    key_statistics_data = {
+        "Metric": [
+            "Current Price (USD)",
+            "Market Cap (Billion USD)",
+            "52-Week Low (USD)",
+            "52-Week High (USD)"
+        ],
+        "Value": [
+            f"{info.get('currentPrice', 'N/A'):.2f}" if info.get("currentPrice") else "N/A",
+            f"{info.get('marketCap', 0) / 1e9:.2f}" if info.get("marketCap") else "N/A",
+            f"{info.get('fiftyTwoWeekLow', 'N/A'):.2f}" if info.get("fiftyTwoWeekLow") else "N/A",
+            f"{info.get('fiftyTwoWeekHigh', 'N/A'):.2f}" if info.get("fiftyTwoWeekHigh") else "N/A",
+        ]
     }
-]
 
-# Convert to DataFrame and display
-recommendation_df = pd.DataFrame(recommendation_data)
-st.table(recommendation_df)
+    key_statistics_df = pd.DataFrame(key_statistics_data)
+
+    # Display the table
+    st.table(key_statistics_df)
     
-# Balance Sheet Section
-if st.button("View Balance Sheet"):
+    # Income Statement Section
+    if st.button("View Income Statement"):
+        st.subheader("Income Statement (Last 4 Years, in Millions USD)")
+        financials = stock.financials.T
+        balance_sheet = stock.balance_sheet.T
+
+        # Check for missing or empty data
+        if financials.empty or balance_sheet.empty:
+            st.error("Financial or balance sheet data is not available for the selected stock.")
+        else:
+            # Convert index to years and sort
+            financials.index = pd.to_datetime(financials.index).year
+            balance_sheet.index = pd.to_datetime(balance_sheet.index).year
+            financials = financials[financials.index != 2019].sort_index(ascending=False).head(4)
+            
+            # Extract required metrics
+            income_data = financials[
+                ["Total Revenue", "Cost Of Revenue", "Gross Profit", "Operating Income", "Pretax Income", "Net Income"]
+            ].copy()
+            income_data.rename(columns={
+                "Total Revenue": "Total Revenue",
+                "Cost Of Revenue": "COGS",
+                "Gross Profit": "Gross Profit",
+                "Operating Income": "Operating Income",
+                "Pretax Income": "Pretax Income",
+                "Net Income": "Net Income"
+            }, inplace=True)
+            
+            # Add Profit Margin
+            income_data["Profit Margin (%)"] = (income_data["Net Income"] / income_data["Total Revenue"] * 100).round(2)
+            
+            # Convert numeric columns to millions where appropriate
+            for col in ["Total Revenue", "COGS", "Gross Profit", "Operating Income", "Pretax Income", "Net Income"]:
+                income_data[col] = income_data[col].div(1e6).round(2)
+            
+            # Display Income Statement Table
+            income_table = income_data.T
+            income_table = income_table.applymap(lambda x: f"{x:,.2f}" if isinstance(x, (float, int)) else x)
+            st.table(income_table)
+            # Balance Sheet Section
+    if st.button("View Balance Sheet"):
         st.subheader("Balance Sheet (Last 4 Years, in Millions USD)")
 
         # Fetch balance sheet data
@@ -233,154 +189,51 @@ if st.button("View Balance Sheet"):
                 template="plotly_white"
             )
             st.plotly_chart(fig)
-    
-    
+                # Recommendation Section
+    st.subheader("Recommendation")
+    pe_ratio = info.get("trailingPE", "N/A")
+    pb_ratio = info.get("priceToBook", "N/A")
+    de_ratio = info.get("debtToEquity", "N/A")
+    fcf = info.get("freeCashflow", "N/A")
 
-# Recommendation Section
-st.subheader("Recommendation")
-pe_ratio = info.get("trailingPE", "N/A")
-pb_ratio = info.get("priceToBook", "N/A")
-de_ratio = info.get("debtToEquity", "N/A")
-fcf = info.get("freeCashflow", "N/A")
+    # Convert free cash flow to millions and format it
+    fcf_text = f"{(fcf / 1e6):,.2f}M USD" if isinstance(fcf, (int, float)) else "N/A"
 
-# Convert free cash flow to millions and format it
-fcf_text = f"{(fcf / 1e6):,.2f}M USD" if isinstance(fcf, (int, float)) else "N/A"
+    # Define recommendations with pros, cons, and thresholds
+    recommendation_data = [
+        {
+            "Metric": "P/E Ratio",
+            "Current Value": f"{pe_ratio:.2f}" if isinstance(pe_ratio, (int, float)) else "N/A",
+            "Pros": "Widely used; easy comparison with industry.",
+            "Cons": "May be misleading for low-earning companies.",
+            "Threshold": "Below 15: Buy; 15-25: Hold; Above 25: Sell"
+        },
+        {
+            "Metric": "P/B Ratio",
+            "Current Value": f"{pb_ratio:.2f}" if isinstance(pb_ratio, (int, float)) else "N/A",
+            "Pros": "Useful for asset-heavy industries.",
+            "Cons": "Less relevant for tech or service companies.",
+            "Threshold": "Below 1: Buy; 1-3: Hold; Above 3: Sell"
+        },
+        {
+            "Metric": "D/E Ratio",
+            "Current Value": f"{de_ratio:.2f}" if isinstance(de_ratio, (int, float)) else "N/A",
+            "Pros": "Indicates financial leverage and risk.",
+            "Cons": "Varies significantly by industry.",
+            "Threshold": "Below 0.5: Buy; 0.5-1: Hold; Above 1: Sell"
+        },
+        {
+            "Metric": "Free Cash Flow (FCF)",
+            "Current Value": fcf_text,
+            "Pros": "Indicates financial health and growth potential.",
+            "Cons": "Can fluctuate significantly year to year.",
+            "Threshold": "Positive: Buy; Negative: Sell"
+        }
+    ]
 
-# Define recommendations with pros, cons, and thresholds
-recommendation_data = [
-    {
-        "Metric": "P/E Ratio",
-        "Current Value": f"{pe_ratio:.2f}" if isinstance(pe_ratio, (int, float)) else "N/A",
-        "Pros": "Widely used; easy comparison with industry.",
-        "Cons": "May be misleading for low-earning companies.",
-        "Threshold": "Below 15: Buy; 15-25: Hold; Above 25: Sell"
-    },
-    {
-        "Metric": "P/B Ratio",
-        "Current Value": f"{pb_ratio:.2f}" if isinstance(pb_ratio, (int, float)) else "N/A",
-        "Pros": "Useful for asset-heavy industries.",
-        "Cons": "Less relevant for tech or service companies.",
-        "Threshold": "Below 1: Buy; 1-3: Hold; Above 3: Sell"
-    },
-    {
-        "Metric": "D/E Ratio",
-        "Current Value": f"{de_ratio:.2f}" if isinstance(de_ratio, (int, float)) else "N/A",
-        "Pros": "Indicates financial leverage and risk.",
-        "Cons": "Varies significantly by industry.",
-        "Threshold": "Below 0.5: Buy; 0.5-1: Hold; Above 1: Sell"
-    },
-    {
-        "Metric": "Free Cash Flow (FCF)",
-        "Current Value": fcf_text,
-        "Pros": "Indicates financial health and growth potential.",
-        "Cons": "Can fluctuate significantly year to year.",
-        "Threshold": "Positive: Buy; Negative: Sell"
-    }
-]
-
-# Convert to DataFrame and display
-recommendation_df = pd.DataFrame(recommendation_data)
-st.table(recommendation_df)
-
-st.subheader("Recommendation")
-pe_ratio = info.get("trailingPE", "N/A")
-pb_ratio = info.get("priceToBook", "N/A")
-de_ratio = info.get("debtToEquity", "N/A")
-fcf = info.get("freeCashflow", "N/A")
-
-# Convert free cash flow to millions and format it
-fcf_text = f"{(fcf / 1e6):,.2f}M USD" if isinstance(fcf, (int, float)) else "N/A"
-
-# Define recommendations with pros, cons, and thresholds
-recommendation_data = [
-    {
-        "Metric": "P/E Ratio",
-        "Current Value": f"{pe_ratio:.2f}" if isinstance(pe_ratio, (int, float)) else "N/A",
-        "Pros": "Widely used; easy comparison with industry.",
-        "Cons": "May be misleading for low-earning companies.",
-        "Threshold": "Below 15: Buy; 15-25: Hold; Above 25: Sell"
-    },
-    {
-        "Metric": "P/B Ratio",
-        "Current Value": f"{pb_ratio:.2f}" if isinstance(pb_ratio, (int, float)) else "N/A",
-        "Pros": "Useful for asset-heavy industries.",
-        "Cons": "Less relevant for tech or service companies.",
-        "Threshold": "Below 1: Buy; 1-3: Hold; Above 3: Sell"
-    },
-    {
-        "Metric": "D/E Ratio",
-        "Current Value": f"{de_ratio:.2f}" if isinstance(de_ratio, (int, float)) else "N/A",
-        "Pros": "Indicates financial leverage and risk.",
-        "Cons": "Varies significantly by industry.",
-        "Threshold": "Below 0.5: Buy; 0.5-1: Hold; Above 1: Sell"
-    },
-    {
-        "Metric": "Free Cash Flow (FCF)",
-        "Current Value": fcf_text,
-        "Pros": "Indicates financial health and growth potential.",
-        "Cons": "Can fluctuate significantly year to year.",
-        "Threshold": "Positive: Buy; Negative: Sell"
-    }
-]
-
-# Convert to DataFrame and display
-recommendation_df = pd.DataFrame(recommendation_data)
-st.table(recommendation_df)
-
-st.subheader("Recommendation")
-pe_ratio = info.get("trailingPE", "N/A")
-pb_ratio = info.get("priceToBook", "N/A")
-de_ratio = info.get("debtToEquity", "N/A")
-fcf = info.get("freeCashflow", "N/A")
-    
-# Convert free cash flow to millions and format it
-fcf_text = f"{(fcf / 1e6):,.2f}M USD" if isinstance(fcf, (int, float)) else "N/A"
-    
-# Define recommendations
-def get_recommendation(metric, value):
-        if not isinstance(value, (int, float)):  # Handle non-numeric values
-            return "N/A"
-        if metric == "P/E":
-            if value < 15:
-                return "Buy"
-            elif 15 <= value <= 25:
-                return "Hold"
-            else:
-                return "Sell"
-        elif metric == "P/B":
-            if value < 1:
-                return "Buy"
-            elif 1 <= value <= 3:
-                return "Hold"
-            else:
-                return "Sell"
-        elif metric == "D/E":
-            if value < 0.5:
-                return "Buy"
-            elif 0.5 <= value <= 1:
-                return "Hold"
-            else:
-                return "Sell"
-        elif metric == "FCF":
-            if value > 0:
-                return "Buy"
-            else:
-                return "Sell"
-        return "N/A"  # Default case for undefined metrics
-
-# Prepare data for the table
-recommendation_data = [
-        ["P/E Ratio", f"{pe_ratio:.2f}" if isinstance(pe_ratio, (int, float)) else "N/A", "Evaluates the stock's price relative to its earnings.", get_recommendation("P/E", pe_ratio)],
-        ["P/B Ratio", f"{pb_ratio:.2f}" if isinstance(pb_ratio, (int, float)) else "N/A", "Compares the stock's market price to book value.", get_recommendation("P/B", pb_ratio)],
-        ["D/E Ratio", f"{de_ratio:.2f}" if isinstance(de_ratio, (int, float)) else "N/A", "Measures financial leverage (debt vs equity).", get_recommendation("D/E", de_ratio)],
-        ["Free Cash Flow (FCF)", fcf_text, "Cash generated after capital expenses.", get_recommendation("FCF", fcf)],
-]
-
-# Create a DataFrame
-recommendation_df = pd.DataFrame(recommendation_data, columns=["Metric", "Current Value", "Explanation", "Recommendation"])
-    
-# Display the Recommendation Table
-st.table(recommendation_df)
+    # Convert to DataFrame and display
+    recommendation_df = pd.DataFrame(recommendation_data)
+    st.table(recommendation_df)
 
 else:
     st.warning("Please enter a valid ticker symbol.")
