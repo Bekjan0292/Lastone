@@ -197,34 +197,11 @@ pb_ratio = info.get("priceToBook", "N/A")
 de_ratio = info.get("debtToEquity", "N/A")
 fcf = info.get("freeCashflow", "N/A")
 
-# Fetch industry peers and calculate industry-level averages
-peers = stock.recommendations
-industry_pe_avg = industry_pb_avg = industry_de_avg = "N/A"
-
-if peers is not None:
-    peer_tickers = peers.index.unique()[:5]  # Limit to 5 peers
-    pe_values = []
-    pb_values = []
-    de_values = []
-    
-    for peer_ticker in peer_tickers:
-        if isinstance(peer_ticker, str):  # Ensure the ticker is a valid string
-            try:
-                peer = yf.Ticker(peer_ticker)
-                pe = peer.info.get("trailingPE", None)
-                pb = peer.info.get("priceToBook", None)
-                de = peer.info.get("debtToEquity", None)
-                if pe: pe_values.append(pe)
-                if pb: pb_values.append(pb)
-                if de: de_values.append(de)
-            except Exception as e:
-                # Log or handle invalid peer tickers gracefully
-                print(f"Error processing ticker {peer_ticker}: {e}")
-    
-    # Calculate averages if we have peer data
-    industry_pe_avg = sum(pe_values) / len(pe_values) if pe_values else "N/A"
-    industry_pb_avg = sum(pb_values) / len(pb_values) if pb_values else "N/A"
-    industry_de_avg = sum(de_values) / len(de_values) if de_values else "N/A"
+# Placeholder for industry values (replace with actual data)
+industry_pe = 20  # Example value for Industry P/E
+industry_pb = 2.5  # Example value for Industry P/B
+industry_de = 0.7  # Example value for Industry D/E
+industry_fcf = "Positive"  # Example for Industry FCF (replace if numeric)
 
 # Convert free cash flow to millions and format it
 fcf_text = f"{(fcf / 1e6):,.2f}M USD" if isinstance(fcf, (int, float)) else "N/A"
@@ -234,7 +211,7 @@ recommendation_data = [
     {
         "Metric": "P/E Ratio",
         "Current Value": f"{pe_ratio:.2f}" if isinstance(pe_ratio, (int, float)) else "N/A",
-        "Industry Current Value": f"{industry_pe_avg:.2f}" if isinstance(industry_pe_avg, (int, float)) else "N/A",
+        "Industry Current Value": f"{industry_pe:.2f}" if isinstance(industry_pe, (int, float)) else "N/A",
         "Explanation": "The Price-to-Earnings (P/E) Ratio measures the stock price relative to its earnings. "
                        "A lower P/E indicates better value compared to earnings, but it can vary by industry.",
         "Pros": "Widely used; allows easy comparison with industry averages.",
@@ -244,7 +221,7 @@ recommendation_data = [
     {
         "Metric": "P/B Ratio",
         "Current Value": f"{pb_ratio:.2f}" if isinstance(pb_ratio, (int, float)) else "N/A",
-        "Industry Current Value": f"{industry_pb_avg:.2f}" if isinstance(industry_pb_avg, (int, float)) else "N/A",
+        "Industry Current Value": f"{industry_pb:.2f}" if isinstance(industry_pb, (int, float)) else "N/A",
         "Explanation": "The Price-to-Book (P/B) Ratio compares the stock price to the book value of the company. "
                        "Useful for determining undervalued or overvalued stocks in asset-heavy industries.",
         "Pros": "Effective for asset-heavy industries like real estate or manufacturing.",
@@ -254,7 +231,7 @@ recommendation_data = [
     {
         "Metric": "D/E Ratio",
         "Current Value": f"{de_ratio:.2f}" if isinstance(de_ratio, (int, float)) else "N/A",
-        "Industry Current Value": f"{industry_de_avg:.2f}" if isinstance(industry_de_avg, (int, float)) else "N/A",
+        "Industry Current Value": f"{industry_de:.2f}" if isinstance(industry_de, (int, float)) else "N/A",
         "Explanation": "The Debt-to-Equity (D/E) Ratio evaluates a company's financial leverage by comparing its total debt "
                        "to shareholders' equity. A lower ratio indicates less financial risk.",
         "Pros": "Highlights the financial stability and leverage of the company.",
@@ -264,7 +241,7 @@ recommendation_data = [
     {
         "Metric": "Free Cash Flow (FCF)",
         "Current Value": fcf_text,
-        "Industry Current Value": "N/A",  # FCF not compared at industry level in this example
+        "Industry Current Value": industry_fcf,  # Replace if numeric
         "Explanation": "Free Cash Flow (FCF) measures the cash a company generates after accounting for capital expenditures. "
                        "It reflects financial health and ability to fund growth or return value to shareholders.",
         "Pros": "Indicates financial health and growth potential.",
