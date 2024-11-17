@@ -33,4 +33,4 @@ else:
     filtered_glossary = glossary_df
 
 # Display Table with Numeration and Full Width
-st.dataframe(filtered_glossary, use_container
+st.dataframe(filtered_glossary, use_container_width=True)
