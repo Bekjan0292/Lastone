@@ -1,53 +1,65 @@
 import streamlit as st
 
-# Titles
-st.title("Investment and Machine Learning, 2024")
-st.header("Stock Analysis")
+# Set up query parameters for navigation
+query_params = st.experimental_get_query_params()
 
-# Main Content spanning the full width of the window
-st.markdown(
+# Determine the section to display based on query parameter
+section = query_params.get("section", ["Home"])[0]
+
+# Sidebar Navigation
+st.sidebar.title("Navigation")
+st.sidebar.markdown(
     """
-    <style>
-    .full-width-text {
-        width: 100%;
-        margin: 0 auto;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
+    - [Home](?section=Home)
+    - [Technical Analysis](?section=Technical)
+    - [Fundamental Analysis](?section=Fundamental)
+    """
 )
 
-st.markdown(
-    """
-    <div class="full-width-text">
-    Welcome to the **Stock Analysis Application**! This tool empowers investors by leveraging both **technical** and **fundamental analysis** approaches to evaluate stocks effectively.
+# Main Content
+if section == "Home":
+    st.title("Investment and Machine Learning, 2024")
+    st.header("Stock Analysis")
 
-    ---
+    st.markdown("""
+    Welcome to the **Stock Analysis Application**! This tool empowers investors by leveraging both **technical** and **fundamental analysis** approaches to evaluate stocks effectively.
 
     ### Types of Analysis and Investment Purposes:
 
-    #### **1. Technical Analysis**
-    - **Purpose**: Ideal for **short-term trading** such as day trading and swing trading.
-    - **Focus**: 
-        - Historical price movements, trends, and patterns.
-        - Tools: Moving averages, RSI, MACD, candlestick charts.
+    - **[Technical Analysis](?section=Technical)**:
+      Focuses on short-term trading strategies like day trading and swing trading.
+    - **[Fundamental Analysis](?section=Fundamental)**:
+      Ideal for long-term investment strategies based on company growth and financial health.
 
-    #### **2. Fundamental Analysis**
-    - **Purpose**: Designed for **long-term investment** strategies focusing on company growth and sustainability.
-    - **Focus**:
-        - Financial health: Revenue, earnings, and balance sheets.
-        - Valuation metrics: P/E ratio, ROE, and other key financial indicators.
+    Click on the links above to learn more about each type of analysis!
+    """)
 
-    ---
+elif section == "Technical":
+    st.title("Technical Analysis")
+    st.markdown("""
+    ### What is Technical Analysis?
+    - Focuses on historical price charts, trends, and patterns.
+    - Tools include:
+        - Moving averages
+        - RSI (Relative Strength Index)
+        - MACD (Moving Average Convergence Divergence)
 
-    ### Why Use This Tool?
-    This application helps you:
-    - Identify trading opportunities with **technical analysis**.
-    - Evaluate company performance for **long-term investments** using **fundamental analysis**.
-    - Gain insights into market trends and patterns.
+    **Purpose**: Best suited for **short-term trading** strategies, such as:
+    - Day trading
+    - Swing trading
+    """)
 
-    Start your analysis by selecting the desired type of analysis and entering the stock ticker in the sidebar. Happy investing!
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
+elif section == "Fundamental":
+    st.title("Fundamental Analysis")
+    st.markdown("""
+    ### What is Fundamental Analysis?
+    - Focuses on evaluating a company's financial health and growth potential.
+    - Tools include:
+        - Balance sheets
+        - Income statements
+        - Valuation metrics (P/E ratio, ROE, etc.)
+
+    **Purpose**: Best suited for **long-term investments** aiming for:
+    - Capital appreciation
+    - Dividends
+    """)
