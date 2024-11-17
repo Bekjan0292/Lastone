@@ -3,24 +3,6 @@ import streamlit as st
 # Title for the About Page
 st.markdown("<h1 style='text-align: center;'>About This Application</h1>", unsafe_allow_html=True)
 
-# Styling for consistent text
-st.markdown(
-    """
-    <style>
-    .full-width-text {
-        width: 100%;
-        margin: 0;
-        padding: 0;
-        text-align: justify;
-        font-family: Arial, sans-serif;
-        font-size: 18px;
-        line-height: 1.6;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
 # About Message
 st.markdown(
     """
