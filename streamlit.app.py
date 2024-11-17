@@ -116,6 +116,65 @@ if ticker:
             income_table = income_data.T
             income_table = income_table.applymap(lambda x: f"{x:,.2f}" if isinstance(x, (float, int)) else x)
             st.table(income_table)
+            # Income Statement Graph with Dual Axes
+fig = go.Figure()
+
+# Add Total Revenue (Left Axis)
+fig.add_trace(
+    go.Bar(
+        x=income_data.index.astype(str),
+        y=income_data["Total Revenue"],
+        name="Total Revenue",
+        marker=dict(color="indigo"),
+        yaxis="y1"
+    )
+)
+
+# Add Net Income (Left Axis)
+fig.add_trace(
+    go.Bar(
+        x=income_data.index.astype(str),
+        y=income_data["Net Income"],
+        name="Net Income",
+        marker=dict(color="orange"),
+        yaxis="y1"
+    )
+)
+
+# Add ROE (Right Axis)
+fig.add_trace(
+    go.Scatter(
+        x=income_data.index.astype(str),
+        y=income_data["ROE (%)"],
+        name="ROE (%)",
+        line=dict(color="teal", width=3),
+        yaxis="y2"
+    )
+)
+
+# Update Layout for Dual Axes
+fig.update_layout(
+    title="Income Statement Metrics (Last 4 Years)",
+    xaxis=dict(title="Year", type="category"),
+    yaxis=dict(
+        title="Amount (in millions USD)",
+        titlefont=dict(color="black"),
+        tickfont=dict(color="black"),
+    ),
+    yaxis2=dict(
+        title="ROE (%)",
+        titlefont=dict(color="teal"),
+        tickfont=dict(color="teal"),
+        anchor="x",
+        overlaying="y",
+        side="right"
+    ),
+    barmode="group",
+    template="plotly_white"
+)
+
+# Display the Chart
+st.plotly_chart(fig)
             # Balance Sheet Section
     if st.button("View Balance Sheet"):
         st.subheader("Balance Sheet (Last 4 Years, in Millions USD)")
