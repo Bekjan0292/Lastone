@@ -120,7 +120,66 @@ if ticker:
             income_table = income_table.applymap(lambda x: f"{x:,.2f}" if isinstance(x, (float, int)) else x)
             st.table(income_table)
             
-            # Income Statement Graph with Dual Axes
+            
+# Income Statement Graph with Dual Axes for Profit Margin
+fig = go.Figure()
+
+# Add Total Revenue (Left Axis)
+fig.add_trace(
+    go.Bar(
+        x=income_data.index.astype(str),
+        y=income_data["Total Revenue"],
+        name="Total Revenue",
+        marker=dict(color="indigo"),
+        yaxis="y1"
+    )
+)
+
+# Add Net Income (Left Axis)
+fig.add_trace(
+    go.Bar(
+        x=income_data.index.astype(str),
+        y=income_data["Net Income"],
+        name="Net Income",
+        marker=dict(color="orange"),
+        yaxis="y1"
+    )
+)
+
+# Add Profit Margin (Right Axis)
+profit_margin = (income_data["Net Income"] / income_data["Total Revenue"] * 100).round(2)
+fig.add_trace(
+    go.Scatter(
+        x=income_data.index.astype(str),
+        y=profit_margin,
+        name="Profit Margin (%)",
+        line=dict(color="teal", width=3),
+        yaxis="y2"
+    )
+)
+
+# Update Layout for Dual Axes
+fig.update_layout(
+    title="Income Statement Metrics (Last 4 Years)",
+    xaxis=dict(title="Year", type="category"),
+    yaxis=dict(
+        title="Amount (in millions USD)",
+        titlefont=dict(color="black"),
+        tickfont=dict(color="black"),
+    ),
+    yaxis2=dict(
+        title="Profit Margin (%)",
+        titlefont=dict(color="teal"),
+        tickfont=dict(color="teal"),
+        anchor="x",
+        overlaying="y",
+        side="right"
+    ),
+    barmode="group",
+    template="plotly_white"
+)
+st.plotly_chart(fig)
+
             fig = go.Figure()
 
             # Add Total Revenue (Left Axis)
@@ -252,7 +311,53 @@ if ticker:
             )
             st.plotly_chart(fig)
     
-    # Recommendation Section
+    
+# Recommendation Section
+st.subheader("Recommendation")
+pe_ratio = info.get("trailingPE", "N/A")
+pb_ratio = info.get("priceToBook", "N/A")
+de_ratio = info.get("debtToEquity", "N/A")
+fcf = info.get("freeCashflow", "N/A")
+
+# Convert free cash flow to millions and format it
+fcf_text = f"{(fcf / 1e6):,.2f}M USD" if isinstance(fcf, (int, float)) else "N/A"
+
+# Define recommendations with pros, cons, and thresholds
+recommendation_data = [
+    {
+        "Metric": "P/E Ratio",
+        "Current Value": f"{pe_ratio:.2f}" if isinstance(pe_ratio, (int, float)) else "N/A",
+        "Pros": "Widely used; easy comparison with industry.",
+        "Cons": "May be misleading for low-earning companies.",
+        "Threshold": "Below 15: Buy; 15-25: Hold; Above 25: Sell"
+    },
+    {
+        "Metric": "P/B Ratio",
+        "Current Value": f"{pb_ratio:.2f}" if isinstance(pb_ratio, (int, float)) else "N/A",
+        "Pros": "Useful for asset-heavy industries.",
+        "Cons": "Less relevant for tech or service companies.",
+        "Threshold": "Below 1: Buy; 1-3: Hold; Above 3: Sell"
+    },
+    {
+        "Metric": "D/E Ratio",
+        "Current Value": f"{de_ratio:.2f}" if isinstance(de_ratio, (int, float)) else "N/A",
+        "Pros": "Indicates financial leverage and risk.",
+        "Cons": "Varies significantly by industry.",
+        "Threshold": "Below 0.5: Buy; 0.5-1: Hold; Above 1: Sell"
+    },
+    {
+        "Metric": "Free Cash Flow (FCF)",
+        "Current Value": fcf_text,
+        "Pros": "Indicates financial health and growth potential.",
+        "Cons": "Can fluctuate significantly year to year.",
+        "Threshold": "Positive: Buy; Negative: Sell"
+    }
+]
+
+# Convert to DataFrame and display
+recommendation_df = pd.DataFrame(recommendation_data)
+st.table(recommendation_df)
+
     st.subheader("Recommendation")
     pe_ratio = info.get("trailingPE", "N/A")
     pb_ratio = info.get("priceToBook", "N/A")
