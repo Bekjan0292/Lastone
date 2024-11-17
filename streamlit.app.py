@@ -1,8 +1,7 @@
 import streamlit as st
 
 # Titles
-st.markdown("<h1 style='text-align: center;'>Investment and Machine Learning</h1>", unsafe_allow_html=True)
-st.markdown("<h2 style='text-align: center;'>2024</h2>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center;'>Investment and Machine Learning 2024</h1>", unsafe_allow_html=True)
 
 # Main Content with full-width styling
 st.markdown(
@@ -22,10 +21,8 @@ st.markdown(
 st.markdown(
     """
     <div class="full-width-text">
-    Welcome to the **Stock Analysis Application**! This tool empowers investors by leveraging both **technical** and **fundamental analysis** approaches to evaluate stocks effectively.
-
+    Welcome to the Stock Analysis Application! This tool empowers investors by leveraging both Technical and Fundamental analysis approaches to evaluate stocks effectively.
     ---
-
     ### Types of Analysis and Investment Purposes:
 
     #### **Technical Analysis**
@@ -48,7 +45,7 @@ st.markdown(
     - Evaluate company performance for **long-term investments** using **fundamental analysis**.
     - Gain insights into market trends and patterns.
 
-    Start your analysis by selecting the desired type of analysis and entering the stock ticker in the sidebar. Happy investing!
+    Start your analysis by selecting the desired type of analysis and entering the stock ticker in the **sidebar**. Happy investing!
     </div>
     """,
     unsafe_allow_html=True
