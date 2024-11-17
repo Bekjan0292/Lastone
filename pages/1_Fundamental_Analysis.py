@@ -74,33 +74,35 @@ if go_button and ticker:
     # Create a DataFrame for better display
     stats_df = pd.DataFrame(stats_data, columns=["Metric", "Value", "Explanation"])
     st.table(stats_df)
-    # Income Statement Section
-    if st.button("View Income Statement"):
-        st.subheader("Income Statement (Last 4 Years, in Millions USD)")
-        financials = stock.financials.T
-        balance_sheet = stock.balance_sheet.T
-
-        # Check for missing or empty data
-        if financials.empty or balance_sheet.empty:
-            st.error("Financial or balance sheet data is not available for the selected stock.")
-        else:
-            st.write("### Financials")
-            st.dataframe(financials)
-            # Convert index to years and sort
-            financials.index = pd.to_datetime(financials.index).year
-            balance_sheet.index = pd.to_datetime(balance_sheet.index).year
-            financials = financials[financials.index != 2019].sort_index(ascending=False).head(4)  # Exclude 2019
-            balance_sheet = balance_sheet[balance_sheet.index != 2019].sort_index(ascending=False).head(4)  # Exclude 2019
-            
-            # Extract required metrics
+    # Directly display income statement and balance sheet without buttons
+    st.subheader("Income Statement (Last 4 Years, in Millions USD)")
+    financials = stock.financials.T
+    balance_sheet = stock.balance_sheet.T
+    
+    # Check for missing or empty data
+    if financials.empty or balance_sheet.empty:
+        st.error("Financial or balance sheet data is not available for the selected stock.")
+    else:
+        # Convert index to years and sort
+        financials.index = pd.to_datetime(financials.index).year
+        balance_sheet.index = pd.to_datetime(balance_sheet.index).year
+        financials = financials[financials.index != 2019].sort_index(ascending=False).head(4)  # Exclude 2019
+        balance_sheet = balance_sheet[balance_sheet.index != 2019].sort_index(ascending=False).head(4)  # Exclude 2019
+    
+        # Safely extract required metrics
+        try:
             total_assets = balance_sheet["Total Assets"]
             total_equity = balance_sheet["Total Equity Gross Minority Interest"]
             net_income = financials["Net Income"]
-
+        except KeyError as e:
+            st.error(f"Missing data: {e}")
+            total_assets, total_equity, net_income = None, None, None
+    
+        if total_assets is not None and total_equity is not None and net_income is not None:
             # Calculate ROA and ROE
             roa = (net_income / total_assets * 100).round(2)
             roe = (net_income / total_equity * 100).round(2)
-
+    
             income_data = financials[
                 ["Total Revenue", "Cost Of Revenue", "Gross Profit", "Operating Income", "Pretax Income", "Net Income"]
             ].copy()
@@ -114,17 +116,17 @@ if go_button and ticker:
             }, inplace=True)
             income_data["ROA (%)"] = roa
             income_data["ROE (%)"] = roe
-
+    
             for col in ["Total Revenue", "COGS", "Gross Profit", "Operating Income", "Pretax Income", "Net Income"]:
                 income_data[col] = income_data[col].div(1e6).round(2)
-            
+    
             income_table = income_data.T
             income_table = income_table.applymap(lambda x: f"{x:,.2f}" if isinstance(x, (float, int)) else x)
             st.table(income_table)
-            
+    
             # Income Statement Graph with Dual Axes
             fig = go.Figure()
-
+    
             # Add Total Revenue (Left Axis)
             fig.add_trace(
                 go.Bar(
@@ -135,7 +137,7 @@ if go_button and ticker:
                     yaxis="y1"
                 )
             )
-
+    
             # Add Net Income (Left Axis)
             fig.add_trace(
                 go.Bar(
@@ -146,7 +148,7 @@ if go_button and ticker:
                     yaxis="y1"
                 )
             )
-
+    
             # Add ROE (Right Axis)
             fig.add_trace(
                 go.Scatter(
@@ -157,7 +159,7 @@ if go_button and ticker:
                     yaxis="y2"
                 )
             )
-
+    
             # Update Layout for Dual Axes
             fig.update_layout(
                 title="Income Statement Metrics (Last 4 Years)",
