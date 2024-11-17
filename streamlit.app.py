@@ -54,7 +54,7 @@ if ticker:
         showlegend=False
     )
     st.plotly_chart(fig, use_container_width=True)
-        # Key statistics with explanations
+    # Key statistics with explanations
     st.subheader("Key Statistics")
     stats_data = [
         ["Current Price", f"${info['currentPrice']:.2f}", "The current trading price of the stock."],
@@ -68,6 +68,13 @@ if ticker:
         ["P/B Ratio", f"{info.get('priceToBook', 'N/A'):.2f}" if info.get('priceToBook') else "N/A", "The price-to-book ratio, showing the price relative to book value per share."],
         ["EPS", f"{info.get('trailingEps', 'N/A'):.2f}" if info.get('trailingEps') else "N/A", "Earnings per share, showing profit allocated to each outstanding share."]
     ]
+    
+    # Create a DataFrame without row numeration
+    stats_df = pd.DataFrame(stats_data, columns=["Metric", "Value", "Explanation"])
+    st.markdown(
+        stats_df.to_html(index=False, escape=False),  # index=False removes row numeration
+        unsafe_allow_html=True
+    )
     # Income Statement Section
     if st.button("View Income Statement"):
         st.subheader("Income Statement (Last 4 Years, in Millions USD)")
