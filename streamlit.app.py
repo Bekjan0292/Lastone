@@ -1,18 +1,45 @@
 import streamlit as st
 import yfinance as yf
-import plotly.graph_objects as go
 import pandas as pd
+import plotly.graph_objects as go
 
 # Page Config
-st.set_page_config(page_title="Stock Fundamental Analysis", layout="wide")
+st.set_page_config(page_title="Stock Analysis App", layout="wide")
 
-# Sidebar
-st.sidebar.title("Stock Analysis")
-ticker = st.sidebar.text_input("Enter Stock Ticker:", value="AAPL")
+# Main Page Layout
+st.title("Stock Analysis App")
+st.write("""
+Welcome to the Stock Analysis App! This tool helps you analyze stocks using two primary methods:
+- **Fundamental Analysis**: Focuses on a company's financial statements, ratios, and performance.
+- **Technical Analysis**: Examines historical price movements and patterns for trading signals.
+""")
 
-# Fetch Data for Main Section
-if ticker:
+# Sidebar Ticker Input
+st.sidebar.header("Enter Stock Ticker")
+ticker = st.sidebar.text_input("Stock Ticker:", value="AAPL")
+
+# Main Page Options
+st.header("Choose Your Analysis Type")
+
+col1, col2 = st.columns(2)
+with col1:
+    if st.button("Fundamental Analysis"):
+        analysis_type = "fundamental"
+    else:
+        analysis_type = None
+with col2:
+    if st.button("Technical Analysis"):
+        analysis_type = "technical"
+
+# Ensure a ticker is provided
+if not ticker:
+    st.warning("Please enter a valid stock ticker.")
+else:
     stock = yf.Ticker(ticker)
+
+    # Fundamental Analysis Section
+    if analysis_type == "fundamental":
+        st.subheader(f"Fundamental Analysis for {ticker.upper()}")
     info = stock.info
     historical = stock.history(period="1y")
     
