@@ -276,7 +276,7 @@ if go_button and ticker:
             "Metric": "P/E",
             "Current Value": f"{pe_ratio:.2f}" if isinstance(pe_ratio, (int, float)) else "N/A",
             "Industry Current Value": f"{industry_pe:.2f}" if isinstance(industry_pe, (int, float)) else "N/A",
-            "Explanation": "The Price-to-Earnings Ratio measures the stock price relative to its earnings. "
+            "Explanation": "The Price-to-Earnings Ratio measures the stock price relative to its earnings. ",
             "Pros": "allows easy comparison with industry averages",
             "Cons": "may be misleading for low-earning or high-growth companies",
             "Recommendation": "Buy" if pe_ratio < 15 else "Hold" if 15 <= pe_ratio <= 25 else "Sell"
@@ -294,7 +294,7 @@ if go_button and ticker:
             "Metric": "D/E Ratio",
             "Current Value": f"{de_ratio:.2f}" if isinstance(de_ratio, (int, float)) else "N/A",
             "Industry Current Value": f"{industry_de:.2f}" if isinstance(industry_de, (int, float)) else "N/A",
-            "Explanation": "The Debt-to-Equity (D/E) Ratio evaluates a company's financial leverage",
+            "Explanation": "The Debt-to-Equity (D/E) Ratio evaluates a company's financial leverage.",
             "Pros": "highlights the financial stability and leverage of the company",
             "Cons": "varies significantly by industry; may not always reflect risk",
             "Recommendation": "Buy" if de_ratio < 0.5 else "Hold" if 0.5 <= de_ratio <= 1 else "Sell"
