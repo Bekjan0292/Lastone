@@ -163,45 +163,34 @@ if go_button and ticker:
             )
             st.plotly_chart(fig)
     
-    # Balance Sheet Section
-    if st.button("View Balance Sheet"):
-        st.subheader("Balance Sheet (Last 4 Years, in Millions USD)")
-
-        # Fetch balance sheet data
-        balance_sheet = stock.balance_sheet.T  # Transpose for easier row handling
-        if balance_sheet.empty:
-            st.error("Balance sheet data is not available for the selected stock.")
-        else:
-            # Convert index to years
-            balance_sheet.index = pd.to_datetime(balance_sheet.index).year
-
-            # Remove 2019 and keep only the last 4 years
-            balance_sheet = balance_sheet.sort_index(ascending=False).head(4)
-
-            # Extract key metrics
-            balance_data = balance_sheet[
-                ["Total Assets", "Total Liabilities Net Minority Interest", "Total Equity Gross Minority Interest"]
-            ].copy()
-            balance_data.rename(columns={
-                "Total Assets": "Total Assets",
-                "Total Liabilities Net Minority Interest": "Total Liabilities",
-                "Total Equity Gross Minority Interest": "Total Equity"
-            }, inplace=True)
-
-            # Add derived metrics
-            balance_data["Cash"] = balance_sheet.get("Cash And Cash Equivalents", 0)
-            balance_data["Debt"] = balance_sheet.get("Short Long Term Debt Total", 0)
-            balance_data["Working Capital"] = balance_data["Total Assets"] - balance_data["Total Liabilities"]
-
-            # Format data
-            for col in ["Total Assets", "Total Liabilities", "Total Equity", "Cash", "Debt", "Working Capital"]:
-                balance_data[col] = balance_data[col].div(1e6).round(2)
-
+    st.subheader("Balance Sheet (Last 4 Years, in Millions USD)")
+    balance_sheet = stock.balance_sheet.T
+    if balance_sheet.empty:
+        st.error("Balance sheet data is not available for the selected stock.")
+    else:
+        balance_sheet.index = pd.to_datetime(balance_sheet.index).year
+        # Remove 2019 and keep only the last 4 years
+        balance_sheet = balance_sheet.sort_index(ascending=False).head(4)
+        # Extract key metrics
+        balance_data = balance_sheet[
+        ["Total Assets", "Total Liabilities Net Minority Interest", "Total Equity Gross Minority Interest"]
+        ].copy()
+        balance_data.rename(columns={
+            "Total Assets": "Total Assets",
+            "Total Liabilities Net Minority Interest": "Total Liabilities",
+            "Total Equity Gross Minority Interest": "Total Equity"
+        }, inplace=True)
+        # Add derived metrics
+        balance_data["Cash"] = balance_sheet.get("Cash And Cash Equivalents", 0)
+        balance_data["Debt"] = balance_sheet.get("Short Long Term Debt Total", 0)
+        balance_data["Working Capital"] = balance_data["Total Assets"] - balance_data["Total Liabilities"]
+        # Format data
+        for col in ["Total Assets", "Total Liabilities", "Total Equity", "Cash", "Debt", "Working Capital"]:
+            balance_data[col] = balance_data[col].div(1e6).round(2)
             # Display table
             balance_table = balance_data.T
             balance_table = balance_table.applymap(lambda x: f"{x:,.2f}" if isinstance(x, (float, int)) else x)
             st.table(balance_table)
-
             # Plot Balance Sheet Metrics
             fig = go.Figure()
             fig.add_trace(
