@@ -93,8 +93,8 @@ else:
         st.write("Total Assets, Liabilities, etc.")
     with st.expander("Cash Flow"):
         st.write("Operating Cash Flow, etc.")
-else:
-    st.warning("Please enter a valid ticker symbol.")
+    else:
+      st.warning("Please enter a valid ticker symbol.")
     
     # Income Statement Section
     if st.button("View Income Statement"):
