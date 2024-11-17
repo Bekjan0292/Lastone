@@ -76,54 +76,46 @@ if go_button and ticker:
     st.table(stats_df)
     
     # Income Statement Section
-    if st.button("View Income Statement"):
-        st.subheader("Income Statement (Last 4 Years, in Millions USD)")
-        financials = stock.financials.T
-        balance_sheet = stock.balance_sheet.T
+     st.subheader("Income Statement (Last 4 Years, in Millions USD)")
+    financials = stock.financials.T
+    balance_sheet = stock.balance_sheet.T
 
-        # Check for missing or empty data
-        if financials.empty or balance_sheet.empty:
-            st.error("Financial or balance sheet data is not available for the selected stock.")
-        else:
-            # Convert index to years and sort
-            financials.index = pd.to_datetime(financials.index).year
-            balance_sheet.index = pd.to_datetime(balance_sheet.index).year
-            financials = financials[financials.index != 2019].sort_index(ascending=False).head(4)  # Exclude 2019
-            balance_sheet = balance_sheet[balance_sheet.index != 2019].sort_index(ascending=False).head(4)  # Exclude 2019
-            
-            # Extract required metrics
-            total_assets = balance_sheet["Total Assets"]
-            total_equity = balance_sheet["Total Equity Gross Minority Interest"]
-            net_income = financials["Net Income"]
-
-            # Calculate ROA and ROE
-            roa = (net_income / total_assets * 100).round(2)
-            roe = (net_income / total_equity * 100).round(2)
-
-            income_data = financials[
-                ["Total Revenue", "Cost Of Revenue", "Gross Profit", "Operating Income", "Pretax Income", "Net Income"]
-            ].copy()
-            income_data.rename(columns={
-                "Total Revenue": "Total Revenue",
-                "Cost Of Revenue": "COGS",
-                "Gross Profit": "Gross Profit",
-                "Operating Income": "Operating Income",
-                "Pretax Income": "Pretax Income",
-                "Net Income": "Net Income"
-            }, inplace=True)
-            income_data["ROA (%)"] = roa
-            income_data["ROE (%)"] = roe
-
-            for col in ["Total Revenue", "COGS", "Gross Profit", "Operating Income", "Pretax Income", "Net Income"]:
-                income_data[col] = income_data[col].div(1e6).round(2)
-            
+    # Check for missing or empty data
+    if financials.empty or balance_sheet.empty:
+        st.error("Financial or balance sheet data is not available for the selected stock.")
+    else:
+        # Convert index to years and sort
+        financials.index = pd.to_datetime(financials.index).year
+        balance_sheet.index = pd.to_datetime(balance_sheet.index).year
+        financials = financials[financials.index != 2019].sort_index(ascending=False).head(4)  # Exclude 2019
+        balance_sheet = balance_sheet[balance_sheet.index != 2019].sort_index(ascending=False).head(4)  # Exclude 2019
+        # Extract required metrics
+        total_assets = balance_sheet["Total Assets"]
+        total_equity = balance_sheet["Total Equity Gross Minority Interest"]
+        net_income = financials["Net Income"]
+        # Calculate ROA and ROE
+        roa = (net_income / total_assets * 100).round(2)
+        roe = (net_income / total_equity * 100).round(2)
+        income_data = financials[
+        ["Total Revenue", "Cost Of Revenue", "Gross Profit", "Operating Income", "Pretax Income", "Net Income"]
+        ].copy()
+        income_data.rename(columns={
+            "Total Revenue": "Total Revenue",
+            "Cost Of Revenue": "COGS",
+            "Gross Profit": "Gross Profit",
+            "Operating Income": "Operating Income",
+            "Pretax Income": "Pretax Income",
+            "Net Income": "Net Income"
+        }, inplace=True)
+        income_data["ROA (%)"] = roa
+        income_data["ROE (%)"] = roe
+        for col in ["Total Revenue", "COGS", "Gross Profit", "Operating Income", "Pretax Income", "Net Income"]:
+            income_data[col] = income_data[col].div(1e6).round(2)
             income_table = income_data.T
             income_table = income_table.applymap(lambda x: f"{x:,.2f}" if isinstance(x, (float, int)) else x)
             st.table(income_table)
-            
             # Income Statement Graph with Dual Axes
             fig = go.Figure()
-
             # Add Total Revenue (Left Axis)
             fig.add_trace(
                 go.Bar(
@@ -133,8 +125,7 @@ if go_button and ticker:
                     marker=dict(color="indigo"),
                     yaxis="y1"
                 )
-            )
-
+            )    
             # Add Net Income (Left Axis)
             fig.add_trace(
                 go.Bar(
