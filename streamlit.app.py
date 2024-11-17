@@ -74,7 +74,18 @@ if ticker:
     stats_df = pd.DataFrame(stats_data, columns=["Metric", "Value", "Explanation"])
     st.table(stats_df)
     
-    # Income Statement Section
+    
+# Income Statement Section
+income_data["Profit Margin (%)"] = (income_data["Net Income"] / income_data["Total Revenue"] * 100).round(2)
+
+# Convert numeric columns to millions where appropriate
+for col in ["Total Revenue", "COGS", "Gross Profit", "Operating Income", "Pretax Income", "Net Income"]:
+    income_data[col] = income_data[col].div(1e6).round(2)
+
+income_table = income_data.T
+income_table = income_table.applymap(lambda x: f"{x:,.2f}" if isinstance(x, (float, int)) else x)
+st.table(income_table)
+
     if st.button("View Income Statement"):
         st.subheader("Income Statement (Last 4 Years, in Millions USD)")
         financials = stock.financials.T
