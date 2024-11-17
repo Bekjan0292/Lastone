@@ -72,10 +72,6 @@ if ticker:
     
     # Create a DataFrame without row numeration
     stats_df = pd.DataFrame(stats_data, columns=["Metric", "Value", "Explanation"])
-    st.markdown(
-        stats_df.to_html(index=False, escape=False),  # index=False removes row numeration
-        unsafe_allow_html=True
-    )
     
     # Financial metrics
     st.subheader("Financial Analysis")
