@@ -1,14 +1,15 @@
 import streamlit as st
 import requests
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+import pandas as pd
 
 # Initialize Sentiment Analyzer
 analyzer = SentimentIntensityAnalyzer()
 
 # Function to fetch news articles
 def fetch_news(company_name):
-    api_key = "a569f66a6b1a44348a05e18388610384"
-    url = f"https://newsapi.org/v2/everything?q={company_name}&language=en&pageSize=5&apiKey={api_key}"
+    api_key = "a569f66a6b1a44348a05e18388610384"  # Replace with your News API key
+    url = f"https://newsapi.org/v2/everything?q={company_name}&language=en&pageSize=10&apiKey={api_key}"
     response = requests.get(url)
     if response.status_code == 200:
         articles = response.json().get("articles", [])
@@ -23,19 +24,17 @@ def analyze_sentiment(headlines):
     for headline in headlines:
         sentiment = analyzer.polarity_scores(headline)
         compound = sentiment['compound']
-        if compound > 0:
-            sentiment_type = "Positive"
-        elif compound < 0:
-            sentiment_type = "Negative"
-        else:
-            sentiment_type = "Neutral"
-        results.append({"headline": headline, "sentiment": sentiment_type, "compound": compound})
+        results.append({"headline": headline, "compound": compound})
     return results
 
 # Streamlit page setup
 st.title("Company Sentiment Analysis")
+
+# Short Info About Sentiment Analysis
 st.markdown("""
-Enter the name of a company to fetch the latest news and perform sentiment analysis on the headlines.
+**What is Sentiment Analysis?**  
+Sentiment Analysis is a natural language processing (NLP) technique used to determine whether a piece of text has a positive, negative, or neutral sentiment.  
+This tool analyzes the sentiment of the latest news headlines about a company to provide insights into market perception.
 """)
 
 # User input
@@ -47,20 +46,37 @@ if st.button("Analyze Sentiment"):
         news = fetch_news(company_name)
         
         if news:
-            st.subheader(f"Latest News Headlines for {company_name}")
-            headlines = []
-            for i, article in enumerate(news, 1):
-                st.markdown(f"{i}. [{article['title']}]({article['url']})")
-                headlines.append(article["title"])
+            # Filter news to exclude "removed" headlines
+            valid_news = [article for article in news if "removed" not in article["title"].lower()]
+            valid_news = valid_news[:5]  # Limit to 5 valid articles
             
-            # Perform sentiment analysis
-            sentiment_results = analyze_sentiment(headlines)
-            
-            # Display sentiment results
-            st.subheader("Sentiment Analysis Results")
-            for result in sentiment_results:
-                st.markdown(f"- **Headline**: {result['headline']}")
-                st.markdown(f"  - Sentiment: **{result['sentiment']}**")
-                st.markdown(f"  - Compound Score: {result['compound']:.2f}")
+            if valid_news:
+                st.subheader(f"Latest News and Sentiment for {company_name}")
+
+                # Analyze sentiment
+                headlines = [article["title"] for article in valid_news]
+                sentiment_results = analyze_sentiment(headlines)
+
+                # Prepare DataFrame for display
+                data = {
+                    "Latest News": [f"[{article['title']}]({article['url']})" for article in valid_news],
+                    "Compound Score": [result["compound"] for result in sentiment_results]
+                }
+                df = pd.DataFrame(data)
+
+                # Display table
+                st.table(df)
+
+                # Display overall sentiment
+                avg_sentiment = df["Compound Score"].mean()
+                st.subheader("Overall Sentiment")
+                if avg_sentiment > 0:
+                    st.success(f"Overall Sentiment: Positive ({avg_sentiment:.2f})")
+                elif avg_sentiment < 0:
+                    st.error(f"Overall Sentiment: Negative ({avg_sentiment:.2f})")
+                else:
+                    st.info("Overall Sentiment: Neutral (0.00)")
+            else:
+                st.warning("No valid news headlines found.")
     else:
         st.warning("Please enter a company name.")
