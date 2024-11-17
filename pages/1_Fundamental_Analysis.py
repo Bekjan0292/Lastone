@@ -284,7 +284,7 @@ if go_button and ticker:
         {
             "Metric": "P/B",
             "Current Value": f"{pb_ratio:.2f}" if isinstance(pb_ratio, (int, float)) else "N/A",
-            "Industry Current Value": f"{industry_pb:.2f}" if isinstance(industry_pb, (int, float)) else "N/A",
+            "Industry": f"{industry_pb:.2f}" if isinstance(industry_pb, (int, float)) else "N/A",
             "Explanation": "The Price-to-Book Ratio compares the stock price to the book value of the company. ",
             "Pros": "effective for asset-heavy industries",
             "Cons": "less relevant for service-oriented companies",
@@ -293,7 +293,7 @@ if go_button and ticker:
         {
             "Metric": "D/E Ratio",
             "Current Value": f"{de_ratio:.2f}" if isinstance(de_ratio, (int, float)) else "N/A",
-            "Industry Current Value": f"{industry_de:.2f}" if isinstance(industry_de, (int, float)) else "N/A",
+            "Industry": f"{industry_de:.2f}" if isinstance(industry_de, (int, float)) else "N/A",
             "Explanation": "The Debt-to-Equity Ratio evaluates a company's financial leverage.",
             "Pros": "highlights the financial stability and leverage of the company",
             "Cons": "varies significantly by industry; may not always reflect risk",
@@ -302,7 +302,7 @@ if go_button and ticker:
         {
             "Metric": "FCF",
             "Current Value": fcf_text,
-            "Industry Current Value": industry_fcf,  # Replace if numeric
+            "Industry": industry_fcf,  # Replace if numeric
             "Explanation": "Free Cash Flow measures the cash a company generates after accounting for capital expenditures. ",
             "Pros": "indicates financial health and growth potential",
             "Cons": "can fluctuate significantly year to year",
