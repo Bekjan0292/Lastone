@@ -32,5 +32,5 @@ if search_term:
 else:
     filtered_glossary = glossary_df
 
-# Display Table without Index
-st.dataframe(filtered_glossary.reset_index(drop=True), use_container_width=True)
+# Display Table Without Numbers
+st.table(filtered_glossary.style.hide_index())
