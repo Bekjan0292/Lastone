@@ -3,7 +3,7 @@ import streamlit as st
 # Title for the About Page
 st.markdown("<h1 style='text-align: center;'>About This Application</h1>", unsafe_allow_html=True)
 
-# Full-width text styling
+# Styling for consistent text
 st.markdown(
     """
     <style>
@@ -12,6 +12,7 @@ st.markdown(
         margin: 0;
         padding: 0;
         text-align: justify;
+        font-family: Arial, sans-serif;
         font-size: 18px;
         line-height: 1.6;
     }
@@ -32,7 +33,7 @@ st.markdown(
     - Gain practical knowledge to start their investment journey with confidence.
 
     Thank you for using this application. We hope it serves as a helpful resource in your learning and growth as an investor!
-
+    
     Nurbek, Baratov
     
     Gulrukh, Rakhimova
