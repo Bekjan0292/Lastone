@@ -74,9 +74,6 @@ if ticker:
     stats_df = pd.DataFrame(stats_data, columns=["Metric", "Value", "Explanation"])
     st.table(stats_df)
     
-else:
-    st.warning("Please enter a valid ticker symbol.")
-    
     # Income Statement Section
     if st.button("View Income Statement"):
         st.subheader("Income Statement (Last 4 Years, in Millions USD)")
@@ -253,3 +250,6 @@ recommendation_data = [
 # Convert to DataFrame and display
 recommendation_df = pd.DataFrame(recommendation_data)
 st.table(recommendation_df)
+
+else:
+    st.warning("Please enter a valid ticker symbol.")
