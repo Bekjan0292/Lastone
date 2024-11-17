@@ -1,17 +1,17 @@
 import streamlit as st
 
-# Set background image using custom HTML
+# Set custom background using CSS
 page_bg_img = '''
 <style>
 body {
-    background-image: url("https://www.financial-planning.com/images/financial-planning-concept-stock-analysis-machine-learning.jpg");
+    background-image: url("https://images.unsplash.com/photo-1517245386807-bb43f82c33c4");
     background-size: cover;
     background-attachment: fixed;
     color: white;
 }
 div.stMarkdown {
     background-color: rgba(0, 0, 0, 0.7);
-    padding: 15px;
+    padding: 20px;
     border-radius: 10px;
 }
 </style>
@@ -22,21 +22,33 @@ st.markdown(page_bg_img, unsafe_allow_html=True)
 st.title("Investment and Machine Learning, 2024")
 st.header("Stock Analysis")
 
-# Main Text with explanations
+# Main Content
 st.markdown("""
-Welcome to the **Stock Analysis Application**! This tool empowers investors by analyzing stocks with **technical** and **fundamental approaches**. It helps you make informed investment decisions.
+Welcome to the **Stock Analysis Application**! This tool empowers investors by leveraging both **technical** and **fundamental analysis** approaches to evaluate stocks effectively.
 
-### Types of Analysis and Their Investment Purposes:
+---
 
-1. **Technical Analysis**
-   - Focus: Examines historical price movements, trends, and patterns.
-   - Tools: Moving averages, RSI, MACD, and candlestick patterns.
-   - **Purpose**: Ideal for short-term trading (e.g., day trading, swing trading).
+### Types of Analysis and Investment Purposes:
 
-2. **Fundamental Analysis**
-   - Focus: Evaluates the financial health of a company, including revenue, earnings, and valuation metrics.
-   - Tools: Financial ratios, balance sheets, income statements, and company news.
-   - **Purpose**: Suitable for long-term investing, focusing on business growth and sustainability.
+#### **1. Technical Analysis**
+- **Purpose**: Ideal for **short-term trading** such as day trading and swing trading.
+- **Focus**: 
+    - Historical price movements, trends, and patterns.
+    - Tools: Moving averages, RSI, MACD, candlestick charts.
 
-This application allows you to analyze stocks for both **short-term trading** and **long-term investment goals**. Select your preferred analysis type and proceed with your stock research!
+#### **2. Fundamental Analysis**
+- **Purpose**: Designed for **long-term investment** strategies focusing on company growth and sustainability.
+- **Focus**:
+    - Financial health: Revenue, earnings, and balance sheets.
+    - Valuation metrics: P/E ratio, ROE, and other key financial indicators.
+
+---
+
+### Why Use This Tool?
+This application helps you:
+- Identify trading opportunities with **technical analysis**.
+- Evaluate company performance for **long-term investments** using **fundamental analysis**.
+- Gain insights into market trends and patterns.
+
+Start your analysis by selecting the desired type of analysis and entering the stock ticker in the sidebar. Happy investing!
 """)
