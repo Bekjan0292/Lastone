@@ -7,4 +7,4 @@ matplotlib
 datetime
 textblob
 requests
-vader.Sentiment
+vaderSentiment
