@@ -1,42 +1,53 @@
 import streamlit as st
-import webbrowser
 
 # Titles
 st.title("Investment and Machine Learning, 2024")
 st.header("Stock Analysis")
 
-# Main Content
-st.markdown("""
-Welcome to the **Stock Analysis Application**! This tool empowers investors by leveraging both **technical** and **fundamental analysis** approaches to evaluate stocks effectively.
+# Main Content spanning the full width of the window
+st.markdown(
+    """
+    <style>
+    .full-width-text {
+        width: 100%;
+        margin: 0 auto;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
----
+st.markdown(
+    """
+    <div class="full-width-text">
+    Welcome to the **Stock Analysis Application**! This tool empowers investors by leveraging both **technical** and **fundamental analysis** approaches to evaluate stocks effectively.
 
-### Types of Analysis and Investment Purposes:
+    ---
 
-#### **Technical Analysis**
-- **Purpose**: Ideal for **short-term trading** such as day trading and swing trading.
-- **Focus**: 
-    - Historical price movements, trends, and patterns.
-    - Tools: Moving averages, RSI, MACD, candlestick charts.
+    ### Types of Analysis and Investment Purposes:
 
-#### **Fundamental Analysis**
-- **Purpose**: Designed for **long-term investment** strategies focusing on company growth and sustainability.
-- **Focus**:
-    - Financial health: Revenue, earnings, and balance sheets.
-    - Valuation metrics: P/E ratio, ROE, and other key financial indicators.
+    #### **1. Technical Analysis**
+    - **Purpose**: Ideal for **short-term trading** such as day trading and swing trading.
+    - **Focus**: 
+        - Historical price movements, trends, and patterns.
+        - Tools: Moving averages, RSI, MACD, candlestick charts.
 
----
+    #### **2. Fundamental Analysis**
+    - **Purpose**: Designed for **long-term investment** strategies focusing on company growth and sustainability.
+    - **Focus**:
+        - Financial health: Revenue, earnings, and balance sheets.
+        - Valuation metrics: P/E ratio, ROE, and other key financial indicators.
 
-### Explore the Tools:
-""")
+    ---
 
-# Buttons for Navigation
-col1, col2 = st.columns(2)
+    ### Why Use This Tool?
+    This application helps you:
+    - Identify trading opportunities with **technical analysis**.
+    - Evaluate company performance for **long-term investments** using **fundamental analysis**.
+    - Gain insights into market trends and patterns.
 
-with col1:
-    if st.button("Go to Fundamental Analysis"):
-        webbrowser.open("Pages/1_Fundamental_Analysis")  # Adjust URL for actual deployment
-
-with col2:
-    if st.button("Go to Technical Analysis"):
-        webbrowser.open("Pages/2_Technical_Analysis")  # Adjust URL for actual deployment
+    Start your analysis by selecting the desired type of analysis and entering the stock ticker in the sidebar. Happy investing!
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
