@@ -116,7 +116,66 @@ if ticker:
             income_table = income_data.T
             income_table = income_table.applymap(lambda x: f"{x:,.2f}" if isinstance(x, (float, int)) else x)
             st.table(income_table)
-    
+        # Income Statement Graph with Dual Axes for Profit Margin
+fig = go.Figure()
+
+# Add Total Revenue (Left Axis)
+fig.add_trace(
+    go.Bar(
+        x=income_data.index.astype(str),
+        y=income_data["Total Revenue"],
+        name="Total Revenue",
+        marker=dict(color="indigo"),
+        yaxis="y1"
+    )
+)
+
+# Add Net Income (Left Axis)
+fig.add_trace(
+    go.Bar(
+        x=income_data.index.astype(str),
+        y=income_data["Net Income"],
+        name="Net Income",
+        marker=dict(color="orange"),
+        yaxis="y1"
+    )
+)
+
+# Calculate Profit Margin
+profit_margin = (income_data["Net Income"] / income_data["Total Revenue"] * 100).round(2)
+
+# Add Profit Margin (Right Axis)
+fig.add_trace(
+    go.Scatter(
+        x=income_data.index.astype(str),
+        y=profit_margin,
+        name="Profit Margin (%)",
+        line=dict(color="teal", width=3),
+        yaxis="y2"
+    )
+)
+
+# Update Layout for Dual Axes
+fig.update_layout(
+    title="Income Statement Metrics (Last 4 Years)",
+    xaxis=dict(title="Year", type="category"),
+    yaxis=dict(
+        title="Amount (in millions USD)",
+        titlefont=dict(color="black"),
+        tickfont=dict(color="black"),
+    ),
+    yaxis2=dict(
+        title="Profit Margin (%)",
+        titlefont=dict(color="teal"),
+        tickfont=dict(color="teal"),
+        anchor="x",
+        overlaying="y",
+        side="right"
+    ),
+    barmode="group",
+    template="plotly_white"
+)
+st.plotly_chart(fig)
 # Recommendation Section
 st.subheader("Recommendation")
 pe_ratio = info.get("trailingPE", "N/A")
