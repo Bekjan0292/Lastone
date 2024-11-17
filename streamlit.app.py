@@ -160,8 +160,8 @@ recommendation_data = [
 recommendation_df = pd.DataFrame(recommendation_data)
 st.table(recommendation_df)
     
-    # Balance Sheet Section
-    if st.button("View Balance Sheet"):
+# Balance Sheet Section
+if st.button("View Balance Sheet"):
         st.subheader("Balance Sheet (Last 4 Years, in Millions USD)")
 
         # Fetch balance sheet data
