@@ -327,7 +327,7 @@ recommendation_data = [
 recommendation_df = pd.DataFrame(recommendation_data)
 st.table(recommendation_df)
 
-    st.subheader("Recommendation")
+st.subheader("Recommendation")
     pe_ratio = info.get("trailingPE", "N/A")
     pb_ratio = info.get("priceToBook", "N/A")
     de_ratio = info.get("debtToEquity", "N/A")
