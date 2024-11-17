@@ -85,17 +85,6 @@ if ticker:
 else:
     st.warning("Please enter a valid ticker symbol.")
     
-    # Financial metrics
-    st.subheader("Financial Analysis")
-    with st.expander("Income Statement"):
-        st.write("Revenue, Net Income, etc.")
-    with st.expander("Balance Sheet"):
-        st.write("Total Assets, Liabilities, etc.")
-    with st.expander("Cash Flow"):
-        st.write("Operating Cash Flow, etc.")
-    else:
-      st.warning("Please enter a valid ticker symbol.")
-    
     # Income Statement Section
     if st.button("View Income Statement"):
         st.subheader("Income Statement (Last 4 Years, in Millions USD)")
