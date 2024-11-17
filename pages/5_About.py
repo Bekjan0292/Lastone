@@ -1,7 +1,7 @@
 import streamlit as st
 
 # Title for the About Page
-st.markdown("<h1 style='text-align: center;'>About This Application</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center;'>About this app</h1>", unsafe_allow_html=True)
 
 # About Message
 st.markdown(
