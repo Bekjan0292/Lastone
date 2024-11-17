@@ -1,37 +1,36 @@
 import streamlit as st
+import pandas as pd
 
 # Title for the Glossary Page
 st.title("Glossary of Financial Terms")
 
 # Introductory Text
 st.markdown("""
-This glossary provides definitions and explanations for commonly used financial and stock market terms. 
-Use this page as a reference to enhance your understanding of key concepts.
+This glossary provides definitions for commonly used financial terms in the stock market. Use the search bar to quickly find terms of interest.
 """)
 
-# Search Functionality
+# Glossary Data
+glossary_data = [
+    {"Term": "P/E Ratio", "Definition": "Price-to-Earnings ratio. A valuation metric calculated by dividing stock price by earnings per share (EPS)."},
+    {"Term": "Market Capitalization", "Definition": "The total value of a company's outstanding shares, calculated as stock price multiplied by the number of shares."},
+    {"Term": "ROE", "Definition": "Return on Equity. A measure of profitability calculated as net income divided by shareholder's equity."},
+    {"Term": "Beta", "Definition": "A measure of a stock's volatility compared to the market."},
+    {"Term": "Dividend Yield", "Definition": "The annual dividend payment divided by the stock price, expressed as a percentage."},
+    {"Term": "RSI", "Definition": "Relative Strength Index. A momentum indicator measuring the speed and change of price movements, ranging from 0 to 100."},
+    {"Term": "Moving Average", "Definition": "An indicator that smooths price data to identify trends over a time period."}
+]
+
+# Convert to DataFrame
+glossary_df = pd.DataFrame(glossary_data)
+
+# Search Bar
 search_term = st.text_input("Search for a term:")
 
-# Glossary Terms and Definitions
-glossary = {
-    "P/E Ratio": "The price-to-earnings (P/E) ratio is a valuation metric calculated by dividing a company's stock price by its earnings per share (EPS).",
-    "Market Capitalization": "The total value of a company's outstanding shares, calculated by multiplying the stock price by the number of shares.",
-    "ROE": "Return on Equity (ROE) is a measure of financial performance, calculated as net income divided by shareholders' equity.",
-    "Beta": "Beta is a measure of a stock's volatility relative to the overall market.",
-    "Dividend Yield": "The dividend yield is the annual dividend payment divided by the stock's current price, expressed as a percentage.",
-    "RSI": "The Relative Strength Index (RSI) is a momentum indicator that measures the speed and change of price movements.",
-    "Moving Average": "A moving average smooths out price data to identify trends over a specific time frame."
-}
-
-# Filter Terms by Search
+# Filter Glossary Data
 if search_term:
-    filtered_glossary = {term: definition for term, definition in glossary.items() if search_term.lower() in term.lower()}
-    if not filtered_glossary:
-        st.warning("No terms found. Try searching for another term.")
+    filtered_glossary = glossary_df[glossary_df["Term"].str.contains(search_term, case=False)]
 else:
-    filtered_glossary = glossary
+    filtered_glossary = glossary_df
 
-# Display Glossary Terms
-for term, definition in filtered_glossary.items():
-    with st.expander(term):
-        st.markdown(definition)
+# Display Table
+st.dataframe(filtered_glossary, use_container_width=True)
