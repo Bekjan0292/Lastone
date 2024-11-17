@@ -117,10 +117,10 @@ if ticker:
             income_table = income_table.applymap(lambda x: f"{x:,.2f}" if isinstance(x, (float, int)) else x)
             st.table(income_table)
         # Income Statement Graph with Dual Axes for Profit Margin
-fig = go.Figure()
+    fig = go.Figure()
 
 # Add Total Revenue (Left Axis)
-fig.add_trace(
+    fig.add_trace(
     go.Bar(
         x=income_data.index.astype(str),
         y=income_data["Total Revenue"],
@@ -131,8 +131,8 @@ fig.add_trace(
 )
 
 # Add Net Income (Left Axis)
-fig.add_trace(
-    go.Bar(
+    fig.add_trace(
+      go.Bar(
         x=income_data.index.astype(str),
         y=income_data["Net Income"],
         name="Net Income",
@@ -142,10 +142,10 @@ fig.add_trace(
 )
 
 # Calculate Profit Margin
-profit_margin = (income_data["Net Income"] / income_data["Total Revenue"] * 100).round(2)
+    profit_margin = (income_data["Net Income"] / income_data["Total Revenue"] * 100).round(2)
 
 # Add Profit Margin (Right Axis)
-fig.add_trace(
+    fig.add_trace(
     go.Scatter(
         x=income_data.index.astype(str),
         y=profit_margin,
@@ -156,7 +156,7 @@ fig.add_trace(
 )
 
 # Update Layout for Dual Axes
-fig.update_layout(
+    fig.update_layout(
     title="Income Statement Metrics (Last 4 Years)",
     xaxis=dict(title="Year", type="category"),
     yaxis=dict(
@@ -175,7 +175,7 @@ fig.update_layout(
     barmode="group",
     template="plotly_white"
 )
-st.plotly_chart(fig)
+    st.plotly_chart(fig)
 # Recommendation Section
 st.subheader("Recommendation")
 pe_ratio = info.get("trailingPE", "N/A")
