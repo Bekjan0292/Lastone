@@ -328,16 +328,16 @@ recommendation_df = pd.DataFrame(recommendation_data)
 st.table(recommendation_df)
 
 st.subheader("Recommendation")
-    pe_ratio = info.get("trailingPE", "N/A")
-    pb_ratio = info.get("priceToBook", "N/A")
-    de_ratio = info.get("debtToEquity", "N/A")
-    fcf = info.get("freeCashflow", "N/A")
+pe_ratio = info.get("trailingPE", "N/A")
+pb_ratio = info.get("priceToBook", "N/A")
+de_ratio = info.get("debtToEquity", "N/A")
+fcf = info.get("freeCashflow", "N/A")
     
-    # Convert free cash flow to millions and format it
-    fcf_text = f"{(fcf / 1e6):,.2f}M USD" if isinstance(fcf, (int, float)) else "N/A"
+# Convert free cash flow to millions and format it
+fcf_text = f"{(fcf / 1e6):,.2f}M USD" if isinstance(fcf, (int, float)) else "N/A"
     
-    # Define recommendations
-    def get_recommendation(metric, value):
+# Define recommendations
+def get_recommendation(metric, value):
         if not isinstance(value, (int, float)):  # Handle non-numeric values
             return "N/A"
         if metric == "P/E":
