@@ -1,16 +1,18 @@
 import streamlit as st
 
 # Titles
-st.title("Investment and Machine Learning, 2024")
-st.header("Stock Analysis")
+st.markdown("<h1 style='text-align: center;'>Investment and Machine Learning</h1>", unsafe_allow_html=True)
+st.markdown("<h2 style='text-align: center;'>2024</h2>", unsafe_allow_html=True)
 
-# Main Content spanning the full width of the window
+# Main Content with full-width styling
 st.markdown(
     """
     <style>
     .full-width-text {
         width: 100%;
-        margin: 0 auto;
+        margin: 0;
+        padding: 0;
+        text-align: justify;
     }
     </style>
     """,
@@ -26,13 +28,13 @@ st.markdown(
 
     ### Types of Analysis and Investment Purposes:
 
-    #### **1. Technical Analysis**
+    #### **Technical Analysis**
     - **Purpose**: Ideal for **short-term trading** such as day trading and swing trading.
     - **Focus**: 
         - Historical price movements, trends, and patterns.
         - Tools: Moving averages, RSI, MACD, candlestick charts.
 
-    #### **2. Fundamental Analysis**
+    #### **Fundamental Analysis**
     - **Purpose**: Designed for **long-term investment** strategies focusing on company growth and sustainability.
     - **Focus**:
         - Financial health: Revenue, earnings, and balance sheets.
@@ -49,5 +51,5 @@ st.markdown(
     Start your analysis by selecting the desired type of analysis and entering the stock ticker in the sidebar. Happy investing!
     </div>
     """,
-    unsafe_allow_html=True,
+    unsafe_allow_html=True
 )
