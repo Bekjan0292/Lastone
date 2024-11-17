@@ -12,3 +12,7 @@ def main_page():
     ### What is Fundamental Analysis?
     - Evaluates financial health, earnings, and company metrics.
     - Focuses on valuation, growth prospects, and business fundamentals.
+
+    Please go to the Main Page and enter a stock ticker and select the type of analysis to proceed.
+    """)
+
