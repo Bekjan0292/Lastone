@@ -116,138 +116,6 @@ if ticker:
             income_table = income_data.T
             income_table = income_table.applymap(lambda x: f"{x:,.2f}" if isinstance(x, (float, int)) else x)
             st.table(income_table)
-            # Income Statement Graph with Dual Axes
-fig = go.Figure()
-
-# Add Total Revenue (Left Axis)
-fig.add_trace(
-    go.Bar(
-        x=income_data.index.astype(str),
-        y=income_data["Total Revenue"],
-        name="Total Revenue",
-        marker=dict(color="indigo"),
-        yaxis="y1"
-    )
-)
-
-# Add Net Income (Left Axis)
-fig.add_trace(
-    go.Bar(
-        x=income_data.index.astype(str),
-        y=income_data["Net Income"],
-        name="Net Income",
-        marker=dict(color="orange"),
-        yaxis="y1"
-    )
-)
-
-# Add ROE (Right Axis)
-fig.add_trace(
-    go.Scatter(
-        x=income_data.index.astype(str),
-        y=income_data["ROE (%)"],
-        name="ROE (%)",
-        line=dict(color="teal", width=3),
-        yaxis="y2"
-    )
-)
-
-# Update Layout for Dual Axes
-fig.update_layout(
-    title="Income Statement Metrics (Last 4 Years)",
-    xaxis=dict(title="Year", type="category"),
-    yaxis=dict(
-        title="Amount (in millions USD)",
-        titlefont=dict(color="black"),
-        tickfont=dict(color="black"),
-    ),
-    yaxis2=dict(
-        title="ROE (%)",
-        titlefont=dict(color="teal"),
-        tickfont=dict(color="teal"),
-        anchor="x",
-        overlaying="y",
-        side="right"
-    ),
-    barmode="group",
-    template="plotly_white"
-)
-
-# Display the Chart
-st.plotly_chart(fig)
-            # Balance Sheet Section
-    if st.button("View Balance Sheet"):
-        st.subheader("Balance Sheet (Last 4 Years, in Millions USD)")
-
-        # Fetch balance sheet data
-        balance_sheet = stock.balance_sheet.T  # Transpose for easier row handling
-        if balance_sheet.empty:
-            st.error("Balance sheet data is not available for the selected stock.")
-        else:
-            # Convert index to years
-            balance_sheet.index = pd.to_datetime(balance_sheet.index).year
-
-            # Remove 2019 and keep only the last 4 years
-            balance_sheet = balance_sheet.sort_index(ascending=False).head(4)
-
-            # Extract key metrics
-            balance_data = balance_sheet[
-                ["Total Assets", "Total Liabilities Net Minority Interest", "Total Equity Gross Minority Interest"]
-            ].copy()
-            balance_data.rename(columns={
-                "Total Assets": "Total Assets",
-                "Total Liabilities Net Minority Interest": "Total Liabilities",
-                "Total Equity Gross Minority Interest": "Total Equity"
-            }, inplace=True)
-
-            # Add derived metrics
-            balance_data["Cash"] = balance_sheet.get("Cash And Cash Equivalents", 0)
-            balance_data["Debt"] = balance_sheet.get("Short Long Term Debt Total", 0)
-            balance_data["Working Capital"] = balance_data["Total Assets"] - balance_data["Total Liabilities"]
-
-            # Format data
-            for col in ["Total Assets", "Total Liabilities", "Total Equity", "Cash", "Debt", "Working Capital"]:
-                balance_data[col] = balance_data[col].div(1e6).round(2)
-
-            # Display table
-            balance_table = balance_data.T
-            balance_table = balance_table.applymap(lambda x: f"{x:,.2f}" if isinstance(x, (float, int)) else x)
-            st.table(balance_table)
-
-            # Plot Balance Sheet Metrics
-            fig = go.Figure()
-            fig.add_trace(
-                go.Bar(
-                    x=balance_data.index.astype(str),
-                    y=balance_data["Total Assets"],
-                    name="Total Assets",
-                    marker=dict(color="purple")
-                )
-            )
-            fig.add_trace(
-                go.Bar(
-                    x=balance_data.index.astype(str),
-                    y=balance_data["Total Liabilities"],
-                    name="Total Liabilities",
-                    marker=dict(color="red")
-                )
-            )
-            fig.add_trace(
-                go.Bar(
-                    x=balance_data.index.astype(str),
-                    y=balance_data["Total Equity"],
-                    name="Total Equity",
-                    marker=dict(color="green")
-                )
-            )
-            fig.update_layout(
-                title="Balance Sheet Metrics (Last 4 Years)",
-                xaxis=dict(title="Year", type="category"),
-                yaxis=dict(title="Amount (in millions USD)"),
-                barmode="group",
-                template="plotly_white"
-            )
-            st.plotly_chart(fig)
     
 # Recommendation Section
 st.subheader("Recommendation")
@@ -255,6 +123,12 @@ pe_ratio = info.get("trailingPE", "N/A")
 pb_ratio = info.get("priceToBook", "N/A")
 de_ratio = info.get("debtToEquity", "N/A")
 fcf = info.get("freeCashflow", "N/A")
+
+# Placeholder for industry values (replace with actual data)
+industry_pe = 20  # Example value for Industry P/E
+industry_pb = 2.5  # Example value for Industry P/B
+industry_de = 0.7  # Example value for Industry D/E
+industry_fcf = "Positive"  # Example for Industry FCF (replace if numeric)
 
 # Convert free cash flow to millions and format it
 fcf_text = f"{(fcf / 1e6):,.2f}M USD" if isinstance(fcf, (int, float)) else "N/A"
@@ -264,6 +138,7 @@ recommendation_data = [
     {
         "Metric": "P/E Ratio",
         "Current Value": f"{pe_ratio:.2f}" if isinstance(pe_ratio, (int, float)) else "N/A",
+        "Industry Current Value": f"{industry_pe:.2f}" if isinstance(industry_pe, (int, float)) else "N/A",
         "Explanation": "The Price-to-Earnings (P/E) Ratio measures the stock price relative to its earnings. "
                        "A lower P/E indicates better value compared to earnings, but it can vary by industry.",
         "Pros": "Widely used; allows easy comparison with industry averages.",
@@ -273,6 +148,7 @@ recommendation_data = [
     {
         "Metric": "P/B Ratio",
         "Current Value": f"{pb_ratio:.2f}" if isinstance(pb_ratio, (int, float)) else "N/A",
+        "Industry Current Value": f"{industry_pb:.2f}" if isinstance(industry_pb, (int, float)) else "N/A",
         "Explanation": "The Price-to-Book (P/B) Ratio compares the stock price to the book value of the company. "
                        "Useful for determining undervalued or overvalued stocks in asset-heavy industries.",
         "Pros": "Effective for asset-heavy industries like real estate or manufacturing.",
@@ -282,6 +158,7 @@ recommendation_data = [
     {
         "Metric": "D/E Ratio",
         "Current Value": f"{de_ratio:.2f}" if isinstance(de_ratio, (int, float)) else "N/A",
+        "Industry Current Value": f"{industry_de:.2f}" if isinstance(industry_de, (int, float)) else "N/A",
         "Explanation": "The Debt-to-Equity (D/E) Ratio evaluates a company's financial leverage by comparing its total debt "
                        "to shareholders' equity. A lower ratio indicates less financial risk.",
         "Pros": "Highlights the financial stability and leverage of the company.",
@@ -291,6 +168,7 @@ recommendation_data = [
     {
         "Metric": "Free Cash Flow (FCF)",
         "Current Value": fcf_text,
+        "Industry Current Value": industry_fcf,  # Replace if numeric
         "Explanation": "Free Cash Flow (FCF) measures the cash a company generates after accounting for capital expenditures. "
                        "It reflects financial health and ability to fund growth or return value to shareholders.",
         "Pros": "Indicates financial health and growth potential.",
