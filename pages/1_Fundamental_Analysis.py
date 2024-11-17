@@ -275,7 +275,7 @@ if go_button and ticker:
         {
             "Metric": "P/E",
             "Current Value": f"{pe_ratio:.2f}" if isinstance(pe_ratio, (int, float)) else "N/A",
-            "Industry Current Value": f"{industry_pe:.2f}" if isinstance(industry_pe, (int, float)) else "N/A",
+            "Industry": f"{industry_pe:.2f}" if isinstance(industry_pe, (int, float)) else "N/A",
             "Explanation": "The Price-to-Earnings Ratio measures the stock price relative to its earnings. ",
             "Pros": "allows easy comparison with industry averages",
             "Cons": "may be misleading for low-earning or high-growth companies",
@@ -294,16 +294,16 @@ if go_button and ticker:
             "Metric": "D/E Ratio",
             "Current Value": f"{de_ratio:.2f}" if isinstance(de_ratio, (int, float)) else "N/A",
             "Industry Current Value": f"{industry_de:.2f}" if isinstance(industry_de, (int, float)) else "N/A",
-            "Explanation": "The Debt-to-Equity (D/E) Ratio evaluates a company's financial leverage.",
+            "Explanation": "The Debt-to-Equity Ratio evaluates a company's financial leverage.",
             "Pros": "highlights the financial stability and leverage of the company",
             "Cons": "varies significantly by industry; may not always reflect risk",
             "Recommendation": "Buy" if de_ratio < 0.5 else "Hold" if 0.5 <= de_ratio <= 1 else "Sell"
         },
         {
-            "Metric": "Free Cash Flow (FCF)",
+            "Metric": "FCF",
             "Current Value": fcf_text,
             "Industry Current Value": industry_fcf,  # Replace if numeric
-            "Explanation": "Free Cash Flow (FCF) measures the cash a company generates after accounting for capital expenditures. ",
+            "Explanation": "Free Cash Flow measures the cash a company generates after accounting for capital expenditures. ",
             "Pros": "indicates financial health and growth potential",
             "Cons": "can fluctuate significantly year to year",
             "Recommendation": "Buy" if isinstance(fcf, (int, float)) and fcf > 0 else "Sell"
