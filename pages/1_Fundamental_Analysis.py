@@ -76,7 +76,7 @@ if go_button and ticker:
     st.table(stats_df)
     
     # Income Statement Section
-     st.subheader("Income Statement (Last 4 Years, in Millions USD)")
+    st.subheader("Income Statement (Last 4 Years, in Millions USD)")
     financials = stock.financials.T
     balance_sheet = stock.balance_sheet.T
 
