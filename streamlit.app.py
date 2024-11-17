@@ -368,19 +368,19 @@ def get_recommendation(metric, value):
                 return "Sell"
         return "N/A"  # Default case for undefined metrics
 
-    # Prepare data for the table
-    recommendation_data = [
+# Prepare data for the table
+recommendation_data = [
         ["P/E Ratio", f"{pe_ratio:.2f}" if isinstance(pe_ratio, (int, float)) else "N/A", "Evaluates the stock's price relative to its earnings.", get_recommendation("P/E", pe_ratio)],
         ["P/B Ratio", f"{pb_ratio:.2f}" if isinstance(pb_ratio, (int, float)) else "N/A", "Compares the stock's market price to book value.", get_recommendation("P/B", pb_ratio)],
         ["D/E Ratio", f"{de_ratio:.2f}" if isinstance(de_ratio, (int, float)) else "N/A", "Measures financial leverage (debt vs equity).", get_recommendation("D/E", de_ratio)],
         ["Free Cash Flow (FCF)", fcf_text, "Cash generated after capital expenses.", get_recommendation("FCF", fcf)],
-    ]
+]
 
-    # Create a DataFrame
-    recommendation_df = pd.DataFrame(recommendation_data, columns=["Metric", "Current Value", "Explanation", "Recommendation"])
+# Create a DataFrame
+recommendation_df = pd.DataFrame(recommendation_data, columns=["Metric", "Current Value", "Explanation", "Recommendation"])
     
-    # Display the Recommendation Table
-    st.table(recommendation_df)
+# Display the Recommendation Table
+st.table(recommendation_df)
 
 else:
     st.warning("Please enter a valid ticker symbol.")
