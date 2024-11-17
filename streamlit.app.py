@@ -148,8 +148,10 @@ fig.add_trace(
     )
 )
 
-# Add Profit Margin (Right Axis)
+# Calculate Profit Margin
 profit_margin = (income_data["Net Income"] / income_data["Total Revenue"] * 100).round(2)
+
+# Add Profit Margin (Right Axis)
 fig.add_trace(
     go.Scatter(
         x=income_data.index.astype(str),
