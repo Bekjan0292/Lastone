@@ -208,13 +208,18 @@ if peers is not None:
     de_values = []
     
     for peer_ticker in peer_tickers:
-        peer = yf.Ticker(peer_ticker)
-        pe = peer.info.get("trailingPE", None)
-        pb = peer.info.get("priceToBook", None)
-        de = peer.info.get("debtToEquity", None)
-        if pe: pe_values.append(pe)
-        if pb: pb_values.append(pb)
-        if de: de_values.append(de)
+        if isinstance(peer_ticker, str):  # Ensure the ticker is a valid string
+            try:
+                peer = yf.Ticker(peer_ticker)
+                pe = peer.info.get("trailingPE", None)
+                pb = peer.info.get("priceToBook", None)
+                de = peer.info.get("debtToEquity", None)
+                if pe: pe_values.append(pe)
+                if pb: pb_values.append(pb)
+                if de: de_values.append(de)
+            except Exception as e:
+                # Log or handle invalid peer tickers gracefully
+                print(f"Error processing ticker {peer_ticker}: {e}")
     
     # Calculate averages if we have peer data
     industry_pe_avg = sum(pe_values) / len(pe_values) if pe_values else "N/A"
