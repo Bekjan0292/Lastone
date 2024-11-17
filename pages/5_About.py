@@ -34,10 +34,15 @@ st.markdown(
     Thank you for using this application. We hope it serves as a helpful resource in your learning and growth as an investor!
 
     Nurbek, Baratov
+    
     Gulrukh, Rakhimova
+    
     Temur, Jurabekov
+    
     Gulnar, Yermagambetova
+    
     Bekjan, Jyrgalbek uulu
+    
     </div>
     """,
     unsafe_allow_html=True
