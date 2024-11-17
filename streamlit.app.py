@@ -1,45 +1,18 @@
 import streamlit as st
 import yfinance as yf
-import pandas as pd
 import plotly.graph_objects as go
+import pandas as pd
 
 # Page Config
-st.set_page_config(page_title="Stock Analysis App", layout="wide")
+st.set_page_config(page_title="Stock Fundamental Analysis", layout="wide")
 
-# Main Page Layout
-st.title("Stock Analysis App")
-st.write("""
-Welcome to the Stock Analysis App! This tool helps you analyze stocks using two primary methods:
-- **Fundamental Analysis**: Focuses on a company's financial statements, ratios, and performance.
-- **Technical Analysis**: Examines historical price movements and patterns for trading signals.
-""")
+# Sidebar
+st.sidebar.title("Stock Analysis")
+ticker = st.sidebar.text_input("Enter Stock Ticker:", value="AAPL")
 
-# Sidebar Ticker Input
-st.sidebar.header("Enter Stock Ticker")
-ticker = st.sidebar.text_input("Stock Ticker:", value="AAPL")
-
-# Main Page Options
-st.header("Choose Your Analysis Type")
-
-col1, col2 = st.columns(2)
-with col1:
-    if st.button("Fundamental Analysis"):
-        analysis_type = "fundamental"
-    else:
-        analysis_type = None
-with col2:
-    if st.button("Technical Analysis"):
-        analysis_type = "technical"
-
-# Ensure a ticker is provided
-if not ticker:
-    st.warning("Please enter a valid stock ticker.")
-else:
+# Fetch Data for Main Section
+if ticker:
     stock = yf.Ticker(ticker)
-
-    # Fundamental Analysis Section
-    if analysis_type == "fundamental":
-        st.subheader(f"Fundamental Analysis for {ticker.upper()}")
     info = stock.info
     historical = stock.history(period="1y")
     
@@ -81,6 +54,7 @@ else:
         showlegend=False
     )
     st.plotly_chart(fig, use_container_width=True)
+    
     # Key statistics with explanations
     st.subheader("Key Statistics")
     stats_data = [
@@ -96,12 +70,21 @@ else:
         ["EPS", f"{info.get('trailingEps', 'N/A'):.2f}" if info.get('trailingEps') else "N/A", "Earnings per share, showing profit allocated to each outstanding share."]
     ]
     
-    # Create a DataFrame without row numeration
+    # Create a DataFrame for better display
     stats_df = pd.DataFrame(stats_data, columns=["Metric", "Value", "Explanation"])
-    st.markdown(
-        stats_df.to_html(index=False, escape=False),  # index=False removes row numeration
-        unsafe_allow_html=True
-    )
+    st.table(stats_df)
+    
+    # Financial metrics
+    st.subheader("Financial Analysis")
+    with st.expander("Income Statement"):
+        st.write("Revenue, Net Income, etc.")
+    with st.expander("Balance Sheet"):
+        st.write("Total Assets, Liabilities, etc.")
+    with st.expander("Cash Flow"):
+        st.write("Operating Cash Flow, etc.")
+else:
+    st.warning("Please enter a valid ticker symbol.")
+    
     # Income Statement Section
     if st.button("View Income Statement"):
         st.subheader("Income Statement (Last 4 Years, in Millions USD)")
