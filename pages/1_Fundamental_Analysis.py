@@ -291,7 +291,7 @@ if go_button and ticker:
             "Recommendation": "Buy" if pb_ratio < 1 else "Hold" if 1 <= pb_ratio <= 3 else "Sell"
         },
         {
-            "Metric": "D/E Ratio",
+            "Metric": "D/E",
             "Current Value": f"{de_ratio:.2f}" if isinstance(de_ratio, (int, float)) else "N/A",
             "Industry": f"{industry_de:.2f}" if isinstance(industry_de, (int, float)) else "N/A",
             "Explanation": "The Debt-to-Equity Ratio evaluates a company's financial leverage.",
