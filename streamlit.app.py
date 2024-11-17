@@ -212,37 +212,37 @@ recommendation_data = [
         "Metric": "P/E Ratio",
         "Current Value": f"{pe_ratio:.2f}" if isinstance(pe_ratio, (int, float)) else "N/A",
         "Industry Current Value": f"{industry_pe:.2f}" if isinstance(industry_pe, (int, float)) else "N/A",
-        "Explanation": "The Price-to-Earnings (P/E) Ratio measures the stock price relative to its earnings. "
-                       "A lower P/E indicates better value compared to earnings, but it can vary by industry.",
-        "Pros": "Widely used; allows easy comparison with industry averages.",
-        "Cons": "May be misleading for low-earning or high-growth companies.",
+        "Explanation": "The Price-to-Earnings (P/E) Ratio measures the stock price relative to its earnings"
+                       "A lower P/E indicates better value compared to earnings, but it can vary by industry",
+        "Pros": "Allows easy comparison with industry averages",
+        "Cons": "May be misleading for low-earning or high-growth companies",
         "Recommendation": "Buy" if pe_ratio < 15 else "Hold" if 15 <= pe_ratio <= 25 else "Sell"
     },
     {
         "Metric": "P/B Ratio",
         "Current Value": f"{pb_ratio:.2f}" if isinstance(pb_ratio, (int, float)) else "N/A",
         "Industry Current Value": f"{industry_pb:.2f}" if isinstance(industry_pb, (int, float)) else "N/A",
-        "Explanation": "The Price-to-Book (P/B) Ratio compares the stock price to the book value of the company. "
-                       "Useful for determining undervalued or overvalued stocks in asset-heavy industries.",
-        "Pros": "Effective for asset-heavy industries like real estate or manufacturing.",
-        "Cons": "Less relevant for service-oriented or tech companies.",
+        "Explanation": "The P/B ratio compares the stock price to the book value of the company"
+                       "Useful for determining undervalued or overvalued stocks in asset-heavy industries",
+        "Pros": "Effective for asset-heavy industries like real estate or manufacturing",
+        "Cons": "Less relevant for service-oriented or tech companies",
         "Recommendation": "Buy" if pb_ratio < 1 else "Hold" if 1 <= pb_ratio <= 3 else "Sell"
     },
     {
         "Metric": "D/E Ratio",
         "Current Value": f"{de_ratio:.2f}" if isinstance(de_ratio, (int, float)) else "N/A",
         "Industry Current Value": f"{industry_de:.2f}" if isinstance(industry_de, (int, float)) else "N/A",
-        "Explanation": "The Debt-to-Equity (D/E) Ratio evaluates a company's financial leverage by comparing its total debt "
-                       "to shareholders' equity. A lower ratio indicates less financial risk.",
-        "Pros": "Highlights the financial stability and leverage of the company.",
-        "Cons": "Varies significantly by industry; may not always reflect operational risk.",
+        "Explanation": "The Debt-to-Equity (D/E) Ratio evaluates a company's financial leverage by comparing its total debt."
+                       "A lower ratio indicates less risk",
+        "Pros": "Highlights the financial stability and leverage of the company",
+        "Cons": "Varies significantly by industry; may not always reflect operational risk",
         "Recommendation": "Buy" if de_ratio < 0.5 else "Hold" if 0.5 <= de_ratio <= 1 else "Sell"
     },
     {
         "Metric": "FCF",
         "Current Value": fcf_text,
         "Industry Current Value": industry_fcf,  # Replace if numeric
-        "Explanation": "Free Cash Flow (FCF) measures the cash a company generates after accounting for capital expenditures. "
+        "Explanation": "Free Cash Flow measures the cash a company generates after accounting for capital expenditures."
                        "It reflects financial health and ability to fund growth or return value to shareholders.",
         "Pros": "Indicates financial health and growth potential.",
         "Cons": "Can fluctuate significantly year to year, especially in cyclical industries.",
