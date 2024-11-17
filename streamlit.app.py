@@ -176,8 +176,8 @@ fig.update_layout(
 # Display the Chart
 st.plotly_chart(fig)
             # Balance Sheet Section
-    if st.button("View Balance Sheet"):
-        st.subheader("Balance Sheet (Last 4 Years, in Millions USD)")
+        if st.button("View Balance Sheet"):
+            st.subheader("Balance Sheet (Last 4 Years, in Millions USD)")
 
         # Fetch balance sheet data
         balance_sheet = stock.balance_sheet.T  # Transpose for easier row handling
