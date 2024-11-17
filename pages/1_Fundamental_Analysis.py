@@ -84,6 +84,8 @@ if go_button and ticker:
         if financials.empty or balance_sheet.empty:
             st.error("Financial or balance sheet data is not available for the selected stock.")
         else:
+            st.write("### Financials")
+            st.dataframe(financials)
             # Convert index to years and sort
             financials.index = pd.to_datetime(financials.index).year
             balance_sheet.index = pd.to_datetime(balance_sheet.index).year
