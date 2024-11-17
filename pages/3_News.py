@@ -8,7 +8,7 @@ analyzer = SentimentIntensityAnalyzer()
 
 # Function to fetch news articles
 def fetch_news(company_name):
-    api_key = "YOUR_NEWS_API_KEY"  # Replace with your News API key
+    api_key = "a569f66a6b1a44348a05e18388610384"
     url = f"https://newsapi.org/v2/everything?q={company_name}&language=en&pageSize=20&apiKey={api_key}"
     response = requests.get(url)
     if response.status_code == 200:
