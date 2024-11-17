@@ -189,50 +189,231 @@ if ticker:
                 template="plotly_white"
             )
             st.plotly_chart(fig)
-                # Recommendation Section
+# Recommendation Section
+st.subheader("Recommendation")
+pe_ratio = info.get("trailingPE", "N/A")
+pb_ratio = info.get("priceToBook", "N/A")
+de_ratio = info.get("debtToEquity", "N/A")
+fcf = info.get("freeCashflow", "N/A")
+
+# Fetch industry peers and calculate industry-level averages
+peers = stock.recommendations
+industry_pe_avg = industry_pb_avg = industry_de_avg = "N/A"
+
+if peers is not None:
+    peer_tickers = peers.index.unique()[:5]  # Limit to 5 peers
+    pe_values = []
+    pb_values = []
+    de_values = []
+    
+    for peer_ticker in peer_tickers:
+        peer = yf.Ticker(peer_ticker)
+        pe = peer.info.get("trailingPE", None)
+        pb = peer.info.get("priceToBook", None)
+        de = peer.info.get("debtToEquity", None)
+        if pe: pe_values.append(pe)
+        if pb: pb_values.append(pb)
+        if de: de_values.append(de)
+    
+    # Calculate averages if we have peer data
+    industry_pe_avg = sum(pe_values) / len(pe_values) if pe_values else "N/A"
+    industry_pb_avg = sum(pb_values) / len(pb_values) if pb_values else "N/A"
+    industry_de_avg = sum(de_values) / len(de_values) if de_values else "N/A"
+
+# Convert free cash flow to millions and format it
+fcf_text = f"{(fcf / 1e6):,.2f}M USD" if isinstance(fcf, (int, float)) else "N/A"
+
+# Define recommendations with explanations, pros, and cons
+recommendation_data = [
+    {
+        "Metric": "P/E Ratio",
+        "Current Value": f"{pe_ratio:.2f}" if isinstance(pe_ratio, (int, float)) else "N/A",
+        "Industry Current Value": f"{industry_pe_avg:.2f}" if isinstance(industry_pe_avg, (int, float)) else "N/A",
+        "Explanation": "The Price-to-Earnings (P/E) Ratio measures the stock price relative to its earnings. "
+                       "A lower P/E indicates better value compared to earnings, but it can vary by industry.",
+        "Pros": "Widely used; allows easy comparison with industry averages.",
+        "Cons": "May be misleading for low-earning or high-growth companies.",
+        "Recommendation": "Buy" if pe_ratio < 15 else "Hold" if 15 <= pe_ratio <= 25 else "Sell"
+    },
+    {
+        "Metric": "P/B Ratio",
+        "Current Value": f"{pb_ratio:.2f}" if isinstance(pb_ratio, (int, float)) else "N/A",
+        "Industry Current Value": f"{industry_pb_avg:.2f}" if isinstance(industry_pb_avg, (int, float)) else "N/A",
+        "Explanation": "The Price-to-Book (P/B) Ratio compares the stock price to the book value of the company. "
+                       "Useful for determining undervalued or overvalued stocks in asset-heavy industries.",
+        "Pros": "Effective for asset-heavy industries like real estate or manufacturing.",
+        "Cons": "Less relevant for service-oriented or tech companies.",
+        "Recommendation": "Buy" if pb_ratio < 1 else "Hold" if 1 <= pb_ratio <= 3 else "Sell"
+    },
+    {
+        "Metric": "D/E Ratio",
+        "Current Value": f"{de_ratio:.2f}" if isinstance(de_ratio, (int, float)) else "N/A",
+        "Industry Current Value": f"{industry_de_avg:.2f}" if isinstance(industry_de_avg, (int, float)) else "N/A",
+        "Explanation": "The Debt-to-Equity (D/E) Ratio evaluates a company's financial leverage by comparing its total debt "
+                       "to shareholders' equity. A lower ratio indicates less financial risk.",
+        "Pros": "Highlights the financial stability and leverage of the company.",
+        "Cons": "Varies significantly by industry; may not always reflect operational risk.",
+        "Recommendation": "Buy" if de_ratio < 0.5 else "Hold" if 0.5 <= de_ratio <= 1 else "Sell"
+    },
+    {
+        "Metric": "Free Cash Flow (FCF)",
+        "Current Value": fcf_text,
+        "Industry Current Value": "N/A",  # FCF not compared at industry level in this example
+        "Explanation": "Free Cash Flow (FCF) measures the cash a company generates after accounting for capital expenditures. "
+                       "It reflects financial health and ability to fund growth or return value to shareholders.",
+        "Pros": "Indicates financial health and growth potential.",
+        "Cons": "Can fluctuate significantly year to year, especially in cyclical industries.",
+        "Recommendation": "Buy" if isinstance(fcf, (int, float)) and fcf > 0 else "Sell"
+    }
+]
+
+# Convert to DataFrame and display
+recommendation_df = pd.DataFrame(recommendation_data)
+st.table(recommendation_df)
+
+st.subheader("Recommendation")
+pe_ratio = info.get("trailingPE", "N/A")
+pb_ratio = info.get("priceToBook", "N/A")
+de_ratio = info.get("debtToEquity", "N/A")
+fcf = info.get("freeCashflow", "N/A")
+
+# Convert free cash flow to millions and format it
+fcf_text = f"{(fcf / 1e6):,.2f}M USD" if isinstance(fcf, (int, float)) else "N/A"
+
+# Define recommendations with pros, cons, and thresholds
+recommendation_data = [
+    {
+        "Metric": "P/E Ratio",
+        "Current Value": f"{pe_ratio:.2f}" if isinstance(pe_ratio, (int, float)) else "N/A",
+        "Pros": "Widely used; easy comparison with industry.",
+        "Cons": "May be misleading for low-earning companies.",
+        "Threshold": "Below 15: Buy; 15-25: Hold; Above 25: Sell"
+    },
+    {
+        "Metric": "P/B Ratio",
+        "Current Value": f"{pb_ratio:.2f}" if isinstance(pb_ratio, (int, float)) else "N/A",
+        "Pros": "Useful for asset-heavy industries.",
+        "Cons": "Less relevant for tech or service companies.",
+        "Threshold": "Below 1: Buy; 1-3: Hold; Above 3: Sell"
+    },
+    {
+        "Metric": "D/E Ratio",
+        "Current Value": f"{de_ratio:.2f}" if isinstance(de_ratio, (int, float)) else "N/A",
+        "Pros": "Indicates financial leverage and risk.",
+        "Cons": "Varies significantly by industry.",
+        "Threshold": "Below 0.5: Buy; 0.5-1: Hold; Above 1: Sell"
+    },
+    {
+        "Metric": "Free Cash Flow (FCF)",
+        "Current Value": fcf_text,
+        "Pros": "Indicates financial health and growth potential.",
+        "Cons": "Can fluctuate significantly year to year.",
+        "Threshold": "Positive: Buy; Negative: Sell"
+    }
+]
+
+# Convert to DataFrame and display
+recommendation_df = pd.DataFrame(recommendation_data)
+st.table(recommendation_df)
+
+st.subheader("Recommendation")
+pe_ratio = info.get("trailingPE", "N/A")
+pb_ratio = info.get("priceToBook", "N/A")
+de_ratio = info.get("debtToEquity", "N/A")
+fcf = info.get("freeCashflow", "N/A")
+
+# Convert free cash flow to millions and format it
+fcf_text = f"{(fcf / 1e6):,.2f}M USD" if isinstance(fcf, (int, float)) else "N/A"
+
+# Define recommendations with pros, cons, and thresholds
+recommendation_data = [
+    {
+        "Metric": "P/E Ratio",
+        "Current Value": f"{pe_ratio:.2f}" if isinstance(pe_ratio, (int, float)) else "N/A",
+        "Pros": "Widely used; easy comparison with industry.",
+        "Cons": "May be misleading for low-earning companies.",
+        "Threshold": "Below 15: Buy; 15-25: Hold; Above 25: Sell"
+    },
+    {
+        "Metric": "P/B Ratio",
+        "Current Value": f"{pb_ratio:.2f}" if isinstance(pb_ratio, (int, float)) else "N/A",
+        "Pros": "Useful for asset-heavy industries.",
+        "Cons": "Less relevant for tech or service companies.",
+        "Threshold": "Below 1: Buy; 1-3: Hold; Above 3: Sell"
+    },
+    {
+        "Metric": "D/E Ratio",
+        "Current Value": f"{de_ratio:.2f}" if isinstance(de_ratio, (int, float)) else "N/A",
+        "Pros": "Indicates financial leverage and risk.",
+        "Cons": "Varies significantly by industry.",
+        "Threshold": "Below 0.5: Buy; 0.5-1: Hold; Above 1: Sell"
+    },
+    {
+        "Metric": "Free Cash Flow (FCF)",
+        "Current Value": fcf_text,
+        "Pros": "Indicates financial health and growth potential.",
+        "Cons": "Can fluctuate significantly year to year.",
+        "Threshold": "Positive: Buy; Negative: Sell"
+    }
+]
+
+# Convert to DataFrame and display
+recommendation_df = pd.DataFrame(recommendation_data)
+st.table(recommendation_df)
+
     st.subheader("Recommendation")
     pe_ratio = info.get("trailingPE", "N/A")
     pb_ratio = info.get("priceToBook", "N/A")
     de_ratio = info.get("debtToEquity", "N/A")
     fcf = info.get("freeCashflow", "N/A")
-
+    
     # Convert free cash flow to millions and format it
     fcf_text = f"{(fcf / 1e6):,.2f}M USD" if isinstance(fcf, (int, float)) else "N/A"
+    
+    # Define recommendations
+    def get_recommendation(metric, value):
+        if not isinstance(value, (int, float)):  # Handle non-numeric values
+            return "N/A"
+        if metric == "P/E":
+            if value < 15:
+                return "Buy"
+            elif 15 <= value <= 25:
+                return "Hold"
+            else:
+                return "Sell"
+        elif metric == "P/B":
+            if value < 1:
+                return "Buy"
+            elif 1 <= value <= 3:
+                return "Hold"
+            else:
+                return "Sell"
+        elif metric == "D/E":
+            if value < 0.5:
+                return "Buy"
+            elif 0.5 <= value <= 1:
+                return "Hold"
+            else:
+                return "Sell"
+        elif metric == "FCF":
+            if value > 0:
+                return "Buy"
+            else:
+                return "Sell"
+        return "N/A"  # Default case for undefined metrics
 
-    # Define recommendations with pros, cons, and thresholds
+    # Prepare data for the table
     recommendation_data = [
-        {
-            "Metric": "P/E Ratio",
-            "Current Value": f"{pe_ratio:.2f}" if isinstance(pe_ratio, (int, float)) else "N/A",
-            "Pros": "Widely used; easy comparison with industry.",
-            "Cons": "May be misleading for low-earning companies.",
-            "Threshold": "Below 15: Buy; 15-25: Hold; Above 25: Sell"
-        },
-        {
-            "Metric": "P/B Ratio",
-            "Current Value": f"{pb_ratio:.2f}" if isinstance(pb_ratio, (int, float)) else "N/A",
-            "Pros": "Useful for asset-heavy industries.",
-            "Cons": "Less relevant for tech or service companies.",
-            "Threshold": "Below 1: Buy; 1-3: Hold; Above 3: Sell"
-        },
-        {
-            "Metric": "D/E Ratio",
-            "Current Value": f"{de_ratio:.2f}" if isinstance(de_ratio, (int, float)) else "N/A",
-            "Pros": "Indicates financial leverage and risk.",
-            "Cons": "Varies significantly by industry.",
-            "Threshold": "Below 0.5: Buy; 0.5-1: Hold; Above 1: Sell"
-        },
-        {
-            "Metric": "Free Cash Flow (FCF)",
-            "Current Value": fcf_text,
-            "Pros": "Indicates financial health and growth potential.",
-            "Cons": "Can fluctuate significantly year to year.",
-            "Threshold": "Positive: Buy; Negative: Sell"
-        }
+        ["P/E Ratio", f"{pe_ratio:.2f}" if isinstance(pe_ratio, (int, float)) else "N/A", "Evaluates the stock's price relative to its earnings.", get_recommendation("P/E", pe_ratio)],
+        ["P/B Ratio", f"{pb_ratio:.2f}" if isinstance(pb_ratio, (int, float)) else "N/A", "Compares the stock's market price to book value.", get_recommendation("P/B", pb_ratio)],
+        ["D/E Ratio", f"{de_ratio:.2f}" if isinstance(de_ratio, (int, float)) else "N/A", "Measures financial leverage (debt vs equity).", get_recommendation("D/E", de_ratio)],
+        ["Free Cash Flow (FCF)", fcf_text, "Cash generated after capital expenses.", get_recommendation("FCF", fcf)],
     ]
 
-    # Convert to DataFrame and display
-    recommendation_df = pd.DataFrame(recommendation_data)
+    # Create a DataFrame
+    recommendation_df = pd.DataFrame(recommendation_data, columns=["Metric", "Current Value", "Explanation", "Recommendation"])
+    
+    # Display the Recommendation Table
     st.table(recommendation_df)
 
 else:
