@@ -45,7 +45,8 @@ st.markdown(
     - Evaluate company performance for **long-term investments** using **fundamental analysis**.
     - Gain insights into market trends and patterns.
 
-    Start your analysis by selecting the desired type of analysis and entering the stock ticker in the **SIDEBAR**. Happy investing!
+    Start your analysis by selecting the desired type of analysis and entering the stock ticker in the **SIDEBAR**. 
+    Happy investing!
     </div>
     """,
     unsafe_allow_html=True
