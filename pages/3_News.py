@@ -8,12 +8,12 @@ analyzer = SentimentIntensityAnalyzer()
 
 # Function to fetch news articles
 def fetch_news(company_name):
-    api_key = "a569f66a6b1a44348a05e18388610384"  # Replace with your News API key
-    url = f"https://newsapi.org/v2/everything?q={company_name}&language=en&pageSize=10&apiKey={api_key}"
+    api_key = "YOUR_NEWS_API_KEY"  # Replace with your News API key
+    url = f"https://newsapi.org/v2/everything?q={company_name}&language=en&pageSize=20&apiKey={api_key}"
     response = requests.get(url)
     if response.status_code == 200:
         articles = response.json().get("articles", [])
-        return [{"title": article["title"], "url": article["url"]} for article in articles]
+        return [article["title"] for article in articles]
     else:
         st.error("Failed to fetch news. Please check your API key or try again later.")
         return []
@@ -47,19 +47,18 @@ if st.button("Analyze Sentiment"):
         
         if news:
             # Filter news to exclude "removed" headlines
-            valid_news = [article for article in news if "removed" not in article["title"].lower()]
-            valid_news = valid_news[:5]  # Limit to 5 valid articles
+            valid_news = [headline for headline in news if "removed" not in headline.lower()]
+            valid_news = valid_news[:10]  # Limit to 10 valid articles
             
             if valid_news:
                 st.subheader(f"Latest News and Sentiment for {company_name}")
 
                 # Analyze sentiment
-                headlines = [article["title"] for article in valid_news]
-                sentiment_results = analyze_sentiment(headlines)
+                sentiment_results = analyze_sentiment(valid_news)
 
                 # Prepare DataFrame for display
                 data = {
-                    "Latest News": [f"[{article['title']}]({article['url']})" for article in valid_news],
+                    "Latest News": [result["headline"] for result in sentiment_results],
                     "Compound Score": [result["compound"] for result in sentiment_results]
                 }
                 df = pd.DataFrame(data)
