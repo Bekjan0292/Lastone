@@ -22,8 +22,8 @@ st.markdown(
     """
     <div class="full-width-text">
     Welcome to the Stock Analysis Application! This tool empowers investors by leveraging both Technical and Fundamental analysis approaches to evaluate stocks effectively.
+   
     ---
-    ### Types of Analysis and Investment Purposes:
 
     #### **Technical Analysis**
     - **Purpose**: Ideal for **short-term trading** such as day trading and swing trading.
