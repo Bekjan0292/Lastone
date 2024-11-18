@@ -3,7 +3,6 @@ import requests
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 import pandas as pd
 
-# Initialize Sentiment Analyzer
 analyzer = SentimentIntensityAnalyzer()
 
 # Function to fetch news articles
