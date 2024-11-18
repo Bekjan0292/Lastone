@@ -71,7 +71,7 @@ if go_button and ticker:
         ["EPS", f"{info.get('trailingEps', 'N/A'):.2f}" if info.get('trailingEps') else "N/A", "Earnings per share, showing profit allocated to each outstanding share."]
     ]
     
-    # Create a DataFrame for better display
+    # DataFrame for better display
     stats_df = pd.DataFrame(stats_data, columns=["Metric", "Value", "Explanation"])
     st.table(stats_df)
     # Directly display income statement and balance sheet without buttons
@@ -261,7 +261,7 @@ if go_button and ticker:
     de_ratio = info.get("debtToEquity", "N/A")
     fcf = info.get("freeCashflow", "N/A")
     
-    # Placeholder for industry values (replace with actual data)
+    # Placeholder for industry values (we will replace later with actual data, temporary solution)
     industry_pe = 20  # Example value for Industry P/E
     industry_pb = 2.5  # Example value for Industry P/B
     industry_de = 0.7  # Example value for Industry D/E
