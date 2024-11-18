@@ -29,7 +29,6 @@ def analyze_sentiment(headlines):
 # Streamlit page setup
 st.title("Company Sentiment Analysis")
 
-# Short Info About Sentiment Analysis
 st.markdown("""
 **What is Sentiment Analysis?**  
 Sentiment Analysis is a natural language processing (NLP) technique used to determine whether a piece of text has a positive, negative, or neutral sentiment.  
