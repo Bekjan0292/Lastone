@@ -1,10 +1,8 @@
 import streamlit as st
 import pandas as pd
 
-# Title for the Glossary Page
 st.title("Glossary of Financial Terms")
 
-# Introductory Text
 st.markdown("""
 This glossary provides definitions for commonly used financial terms in the stock market. Use the search bar to quickly find terms of interest.
 """)
@@ -20,17 +18,13 @@ glossary_data = [
     {"Term": "Moving Average", "Definition": "An indicator that smooths price data to identify trends over a time period."}
 ]
 
-# Convert to DataFrame
 glossary_df = pd.DataFrame(glossary_data)
 
-# Search Bar
 search_term = st.text_input("Search for a term:")
 
-# Filter Glossary Data
 if search_term:
     filtered_glossary = glossary_df[glossary_df["Term"].str.contains(search_term, case=False)]
 else:
     filtered_glossary = glossary_df
 
-# Display Table with Numeration and Full Width
 st.dataframe(filtered_glossary, use_container_width=True)
