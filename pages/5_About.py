@@ -1,13 +1,12 @@
 import streamlit as st
 
-# Title for the About Page
 st.markdown("<h1 style='text-align: center;'>About this app</h1>", unsafe_allow_html=True)
 
 # About Message
 st.markdown(
     """
     <div class="full-width-text">
-    This application was prepared for the course <strong>"Investments and Machine Learning"</strong> in 2024. It is designed specifically for beginners in the field of investments, providing an intuitive platform to learn and explore key concepts.
+    This application was prepared for the course <strong>"Investment and Machine Learning"</strong> in 2024. It is designed specifically for beginners in the field of investments, providing an intuitive platform to learn and explore key concepts.
 
     Through tools for both <strong>technical analysis</strong> and <strong>fundamental analysis</strong>, this application helps users:
     - Understand essential financial metrics and indicators.
